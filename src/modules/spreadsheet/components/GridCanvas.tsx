@@ -349,7 +349,7 @@ export default function GridCanvas() {
         {/* Visible Rendered grid table */}
         <table 
           ref={tableRef}
-          style={{ width: totalWidth, height: totalHeight }}
+          style={{ width: totalWidth }}
           className="border-collapse table-fixed absolute left-0 top-0 select-none font-mono"
         >
           {/* Column sizing details */}
