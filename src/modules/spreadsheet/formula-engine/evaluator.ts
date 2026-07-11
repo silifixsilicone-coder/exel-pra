@@ -7,6 +7,7 @@ import './formula-functions/logical';
 import './formula-functions/text';
 import './formula-functions/lookup';
 import './formula-functions/date';
+import './formula-functions/custom';
 
 export function evaluateGrid(cells: Record<string, CellData>): Record<string, CellData> {
   const result: Record<string, CellData> = {};

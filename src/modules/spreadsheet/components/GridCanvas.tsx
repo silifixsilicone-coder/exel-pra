@@ -6,6 +6,9 @@ import { colNumberToLetter, colLetterToNumber, getCellAddress, parseCellAddress 
 import { evaluateGrid } from '../formula-engine/evaluator';
 import ContextMenu from './ContextMenu';
 import FormulaAutocomplete, { getSearchWord } from './FormulaAutocomplete';
+import ParameterAssistant from './ParameterAssistant';
+import { validateFormula } from '../formula-engine/formula-validation';
+import { AlertCircle } from 'lucide-react';
 
 const ROW_HEIGHT = 28;
 const COL_WIDTH = 120;
@@ -50,6 +53,20 @@ export default function GridCanvas() {
 
   // Context Menu state
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+
+  // States for formula validation and parameter assistant
+  const [cursorPosition, setCursorPosition] = useState(0);
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  // Validate formula while editing in grid cell
+  useEffect(() => {
+    if (editingCell) {
+      const res = validateFormula(editValue);
+      setValidationError(res.isValid ? null : res.errorMessage || null);
+    } else {
+      setValidationError(null);
+    }
+  }, [editValue, editingCell]);
 
   // Measure visible dimensions
   useEffect(() => {
@@ -496,6 +513,13 @@ export default function GridCanvas() {
             }, 200);
           };
 
+          const handleCursorTrack = (e: React.SyntheticEvent<HTMLInputElement>) => {
+            setCursorPosition(e.currentTarget.selectionStart || 0);
+          };
+
+          const hasParams = editValue.startsWith('=') && editValue.includes('(');
+          const shouldShowParameterAssistant = hasParams && !shouldShowSuggestions;
+
           return (
             <>
               <input
@@ -505,10 +529,31 @@ export default function GridCanvas() {
                 onChange={(e) => {
                   setEditValue(e.target.value);
                   updateCell(editingCell, e.target.value);
+                  setCursorPosition(e.target.selectionStart || 0);
                 }}
                 onBlur={handleInputBlur}
-                className="absolute bg-grid-bg text-foreground border border-emerald-500 font-mono text-xs px-2 z-40 outline-none shadow-xl"
+                onSelect={handleCursorTrack}
+                onClick={handleCursorTrack}
+                onKeyUp={handleCursorTrack}
+                className="absolute bg-grid-bg text-foreground border border-emerald-500 font-mono text-xs px-2 z-40 outline-none shadow-xl pr-8"
               />
+
+              {/* Validation Warning Symbol in active cell */}
+              {validationError && (
+                <div 
+                  style={{
+                    position: 'absolute',
+                    top: Number(editorStyle.top) + 6,
+                    left: Number(editorStyle.left) + Number(editorStyle.width) - 20,
+                    zIndex: 45
+                  }}
+                  className="text-red-500 hover:text-red-400 cursor-help"
+                  title={validationError}
+                >
+                  <AlertCircle className="w-3.5 h-3.5" />
+                </div>
+              )}
+
               {shouldShowSuggestions && (
                 <div 
                   style={{
@@ -526,6 +571,20 @@ export default function GridCanvas() {
                     }}
                     onClose={() => stopEditing(false)}
                   />
+                </div>
+              )}
+
+              {/* Parameter Assistant tooltip */}
+              {shouldShowParameterAssistant && (
+                <div 
+                  style={{
+                    position: 'absolute',
+                    top: Number(editorStyle.top) + Number(editorStyle.height) + 2,
+                    left: editorStyle.left,
+                    zIndex: 50
+                  }}
+                >
+                  <ParameterAssistant val={editValue} cursorIdx={cursorPosition} />
                 </div>
               )}
             </>
