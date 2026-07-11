@@ -146,7 +146,7 @@ export default function JobDetailPage({ params }: PageProps) {
   const isCompleted = progress.jobProjectStats[project.id]?.completed;
 
   return (
-    <div className="flex flex-col min-h-full p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
+    <div className="flex flex-col min-h-full p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-7xl mx-auto">
       
       {/* Back and Status Header */}
       <div className="flex items-center justify-between">
@@ -172,7 +172,7 @@ export default function JobDetailPage({ params }: PageProps) {
         <div className="lg:col-span-3 flex flex-col space-y-4">
           
           {/* Project Details Card */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-5 shadow-lg space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
               <div className="space-y-1">
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">
@@ -204,7 +204,7 @@ export default function JobDetailPage({ params }: PageProps) {
             </div>
 
             {/* Live spreadsheet practice canvas */}
-            <div className="w-full min-h-[380px] h-[420px] pt-2">
+            <div className="w-full h-[300px] sm:h-[420px] pt-2">
               <Spreadsheet 
                 initialState={sheetState} 
                 onChange={handleGridChange}

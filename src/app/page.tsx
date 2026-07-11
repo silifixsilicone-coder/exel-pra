@@ -156,7 +156,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex flex-col min-h-full p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
+    <div className="flex flex-col min-h-full p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-7xl mx-auto">
       
       {/* 1. Header Area */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -226,7 +226,7 @@ export default function Dashboard() {
         <div className="lg:col-span-3 flex flex-col space-y-4">
           
           {/* Today's Question Card */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-5 shadow-lg space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-4">
               <div className="space-y-1">
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
@@ -267,7 +267,7 @@ export default function Dashboard() {
             </div>
 
             {/* Simulated Live Grid Sheet */}
-            <div className="w-full min-h-[320px] h-[360px] pt-2">
+            <div className="w-full h-[280px] sm:h-[360px] pt-2">
               <Spreadsheet 
                 initialState={sheetState} 
                 onChange={handleGridChange}

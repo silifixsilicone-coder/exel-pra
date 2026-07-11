@@ -312,7 +312,7 @@ export default function ExamSessionPage({ params }: PageProps) {
         
         {/* Spreadsheet Area (3 Cols) */}
         <div className="lg:col-span-3 flex flex-col space-y-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-5 shadow-lg space-y-4">
             
             {/* Task Description */}
             <div className="space-y-2.5 text-sm leading-relaxed text-slate-350">
@@ -327,7 +327,7 @@ export default function ExamSessionPage({ params }: PageProps) {
             </div>
 
             {/* Live spreadsheet practice canvas */}
-            <div className="w-full min-h-[380px] h-[420px] pt-2">
+            <div className="w-full h-[300px] sm:h-[420px] pt-2">
               <Spreadsheet 
                 key={activeQuestion.id} // Forces remounting when moving questions to load correct grid
                 initialState={activeSheetState} 
