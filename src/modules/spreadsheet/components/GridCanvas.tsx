@@ -354,13 +354,13 @@ export default function GridCanvas() {
         >
           {/* Column sizing details */}
           <colgroup>
-            <col style={{ width: ROW_HEADER_WIDTH }} />
+            <col width={ROW_HEADER_WIDTH} />
             {/* Left spacer column */}
             {visibleColsStart > 1 && (
-              <col style={{ width: (visibleColsStart - 1) * COL_WIDTH }} />
+              <col width={(visibleColsStart - 1) * COL_WIDTH} />
             )}
             {cols.map(c => (
-              <col key={c} style={{ width: COL_WIDTH }} />
+              <col key={c} width={COL_WIDTH} />
             ))}
           </colgroup>
 
@@ -370,7 +370,7 @@ export default function GridCanvas() {
               {/* Intersection corner */}
               <th 
                 style={{ height: COL_HEADER_HEIGHT }}
-                className="sticky left-0 top-0 z-40 bg-slate-900 border-r border-b border-grid-border text-[10px] text-slate-555 font-bold select-none text-center cursor-default" 
+                className="sticky left-0 top-0 z-40 bg-slate-900 border-r border-b border-grid-border text-[10px] text-slate-400 font-bold select-none text-center cursor-default" 
               />
               {/* Left spacer cell */}
               {visibleColsStart > 1 && (
@@ -381,7 +381,7 @@ export default function GridCanvas() {
                   key={c}
                   onClick={() => selectCol(c)}
                   style={{ height: COL_HEADER_HEIGHT }}
-                  className="bg-slate-900 border-r border-b border-grid-border text-[10px] text-slate-450 hover:text-white font-bold select-none text-center cursor-pointer"
+                  className="bg-slate-900 border-r border-b border-grid-border text-[10px] text-slate-400 hover:text-white font-bold select-none text-center cursor-pointer"
                 >
                   {colNumberToLetter(c)}
                 </th>
@@ -405,7 +405,7 @@ export default function GridCanvas() {
                 <td
                   onClick={() => selectRow(r)}
                   style={{ height: ROW_HEIGHT }}
-                  className="sticky left-0 z-25 bg-slate-900 border-r border-b border-grid-border text-[10px] text-slate-450 hover:text-white font-bold text-center select-none cursor-pointer"
+                  className="sticky left-0 z-25 bg-slate-900 border-r border-b border-grid-border text-[10px] text-slate-400 hover:text-white font-bold text-center select-none cursor-pointer"
                 >
                   {r}
                 </td>
@@ -434,7 +434,7 @@ export default function GridCanvas() {
                       cellStyleClass += ' text-slate-300';
                     }
                   } else {
-                    cellStyleClass += ' text-slate-350';
+                    cellStyleClass += ' text-slate-400';
                   }
 
                   // Render display value
