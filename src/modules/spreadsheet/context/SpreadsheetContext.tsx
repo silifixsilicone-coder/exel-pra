@@ -2,7 +2,12 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { CellData, CellRange, SheetData, ClipboardData, WorkbookState } from '../types';
-import { colNumberToLetter, colLetterToNumber, evaluateFormula } from '../utils/gridUtils';
+import { colNumberToLetter, colLetterToNumber, getCellAddress, parseCellAddress } from '../utils/gridUtils';
+import { evaluateGrid } from '../formula-engine/evaluator';
+import { getCellValue } from '../formula-engine/formula-evaluator';
+import { getDependencies } from '../formula-engine/formula-parser';
+import { DependencyGraph } from '../formula-engine/dependency-graph';
+import { FormulaError } from '../formula-engine/formula-errors';
 
 interface SpreadsheetContextType {
   workbook: WorkbookState;
@@ -62,42 +67,78 @@ interface SpreadsheetContextType {
 
 const SpreadsheetContext = createContext<SpreadsheetContextType | undefined>(undefined);
 
+// Dependency Graph registry mapped by Sheet ID
+const dependencyGraphMap: Record<string, DependencyGraph> = {};
+
+function getDependencyGraph(sheetId: string): DependencyGraph {
+  if (!dependencyGraphMap[sheetId]) {
+    dependencyGraphMap[sheetId] = new DependencyGraph();
+  }
+  return dependencyGraphMap[sheetId];
+}
+
+// Rebuilds entire dependency graph for structural modifications
+function initializeSheetDependencyGraph(sheetId: string, cells: Record<string, CellData>) {
+  const graph = getDependencyGraph(sheetId);
+  graph.clear();
+  Object.entries(cells).forEach(([key, cell]) => {
+    if (cell.value.startsWith('=')) {
+      const deps = getDependencies(cell.value);
+      graph.addCell(key, deps);
+    }
+  });
+}
+
+// Utility to classify data type
+function determineDataType(val: string): 'text' | 'number' | 'boolean' | 'date' | 'time' | 'formula' | 'blank' {
+  if (val === '') return 'blank';
+  if (val.startsWith('=')) return 'formula';
+  if (val.toUpperCase() === 'TRUE' || val.toUpperCase() === 'FALSE') return 'boolean';
+  if (!isNaN(Number(val)) && isFinite(Number(val))) return 'number';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return 'date';
+  if (/^\d{2}:\d{2}:\d{2}$/.test(val)) return 'time';
+  return 'text';
+}
+
 // Initial workbook mock data
 const createInitialSheet = (id: string, name: string): SheetData => {
   const cells: Record<string, CellData> = {};
   
   // Seed initial demo data for Sheet1
   if (id === 'sheet-1') {
-    cells['A1'] = { value: 'Product Sales Dashboard', bold: true, fontSize: 16, color: '#10b981' };
-    cells['A3'] = { value: 'Product Name', bold: true, bgColor: '#1e293b', color: '#f8fafc' };
-    cells['B3'] = { value: 'Units Sold', bold: true, bgColor: '#1e293b', color: '#f8fafc', align: 'right' };
-    cells['C3'] = { value: 'Unit Price', bold: true, bgColor: '#1e293b', color: '#f8fafc', align: 'right' };
-    cells['D3'] = { value: 'Total Revenue', bold: true, bgColor: '#1e293b', color: '#f8fafc', align: 'right' };
+    cells['A1'] = { value: 'Product Sales Dashboard', bold: true, fontSize: 16, color: '#10b981', dataType: 'text' };
+    cells['A3'] = { value: 'Product Name', bold: true, bgColor: '#1e293b', color: '#f8fafc', dataType: 'text' };
+    cells['B3'] = { value: 'Units Sold', bold: true, bgColor: '#1e293b', color: '#f8fafc', align: 'right', dataType: 'text' };
+    cells['C3'] = { value: 'Unit Price', bold: true, bgColor: '#1e293b', color: '#f8fafc', align: 'right', dataType: 'text' };
+    cells['D3'] = { value: 'Total Revenue', bold: true, bgColor: '#1e293b', color: '#f8fafc', align: 'right', dataType: 'text' };
 
-    cells['A4'] = { value: 'Excel Course Pro' };
-    cells['B4'] = { value: '145', align: 'right' };
-    cells['C4'] = { value: '49', align: 'right' };
-    cells['D4'] = { value: '=B4*C4', align: 'right' };
+    cells['A4'] = { value: 'Excel Course Pro', dataType: 'text' };
+    cells['B4'] = { value: '145', align: 'right', dataType: 'number' };
+    cells['C4'] = { value: '49', align: 'right', dataType: 'number' };
+    cells['D4'] = { value: '=B4*C4', align: 'right', dataType: 'formula' };
 
-    cells['A5'] = { value: 'Mock Exams Pass' };
-    cells['B5'] = { value: '98', align: 'right' };
-    cells['C5'] = { value: '99', align: 'right' };
-    cells['D5'] = { value: '=B5*C5', align: 'right' };
+    cells['A5'] = { value: 'Mock Exams Pass', dataType: 'text' };
+    cells['B5'] = { value: '98', align: 'right', dataType: 'number' };
+    cells['C5'] = { value: '99', align: 'right', dataType: 'number' };
+    cells['D5'] = { value: '=B5*C5', align: 'right', dataType: 'formula' };
 
-    cells['A6'] = { value: 'Corporate Licenses' };
-    cells['B6'] = { value: '12', align: 'right' };
-    cells['C6'] = { value: '899', align: 'right' };
-    cells['D6'] = { value: '=B6*C6', align: 'right' };
+    cells['A6'] = { value: 'Corporate Licenses', dataType: 'text' };
+    cells['B6'] = { value: '12', align: 'right', dataType: 'number' };
+    cells['C6'] = { value: '899', align: 'right', dataType: 'number' };
+    cells['D6'] = { value: '=B6*C6', align: 'right', dataType: 'formula' };
 
-    cells['A8'] = { value: 'Total Sum', bold: true };
-    cells['B8'] = { value: '=SUM(B4:B6)', bold: true, align: 'right' };
-    cells['D8'] = { value: '=SUM(D4:D6)', bold: true, align: 'right', color: '#10b981' };
+    cells['A8'] = { value: 'Total Sum', bold: true, dataType: 'text' };
+    cells['B8'] = { value: '=SUM(B4:B6)', bold: true, align: 'right', dataType: 'formula' };
+    cells['D8'] = { value: '=SUM(D4:D6)', bold: true, align: 'right', color: '#10b981', dataType: 'formula' };
   }
+
+  // Pre-seed dependency graph for startup
+  initializeSheetDependencyGraph(id, cells);
 
   return {
     id,
     name,
-    cells,
+    cells: evaluateGrid(cells),
     rowCount: 100000, // 100,000 rows
     colCount: 1000,   // 1,000 columns
     selectedRange: { startRow: 1, startCol: 1, endRow: 1, endCol: 1 },
@@ -394,14 +435,69 @@ export const SpreadsheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setWorkbook(prev => {
       const sheet = prev.sheets[prev.activeSheetId];
       const newCells = { ...sheet.cells };
+      const graph = getDependencyGraph(prev.activeSheetId);
 
       if (value === '') {
+        // Clear cell
+        graph.removeCell(cellKey);
         delete newCells[cellKey];
+
+        // Trigger updates in all cells that depend on it
+        const dependents = graph.getDependents(cellKey);
+        dependents.forEach(dep => {
+          if (newCells[dep]) {
+            newCells[dep] = { ...newCells[dep], computed: undefined };
+          }
+        });
+        dependents.forEach(dep => {
+          if (newCells[dep]) {
+            newCells[dep].computed = getCellValue(dep, newCells);
+          }
+        });
       } else {
-        newCells[cellKey] = {
-          ...(newCells[cellKey] || {}),
-          value
-        };
+        const type = determineDataType(value);
+        const cellDeps = type === 'formula' ? getDependencies(value) : [];
+
+        // Run Circular Reference Check
+        const isCycle = graph.hasCycle(cellKey, cellDeps);
+
+        if (isCycle) {
+          // Circular Reference detected! Do NOT add dependencies to graph
+          graph.removeCell(cellKey);
+          newCells[cellKey] = {
+            ...(newCells[cellKey] || {}),
+            value,
+            dataType: 'formula',
+            computed: FormulaError.CIRC
+          };
+        } else {
+          // Register dependencies
+          graph.addCell(cellKey, cellDeps);
+          newCells[cellKey] = {
+            ...(newCells[cellKey] || {}),
+            value,
+            dataType: type,
+            computed: undefined
+          };
+
+          // Re-evaluate cells topologically
+          const dependents = graph.getDependents(cellKey);
+          [cellKey, ...dependents].forEach(dep => {
+            if (newCells[dep]) {
+              newCells[dep] = { ...newCells[dep], computed: undefined };
+            }
+          });
+
+          // Compute cellKey
+          newCells[cellKey].computed = getCellValue(cellKey, newCells);
+
+          // Compute dependents
+          dependents.forEach(dep => {
+            if (newCells[dep]) {
+              newCells[dep].computed = getCellValue(dep, newCells);
+            }
+          });
+        }
       }
 
       return {
@@ -443,13 +539,32 @@ export const SpreadsheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setWorkbook(prev => {
       const sheet = prev.sheets[prev.activeSheetId];
       const newCells = { ...sheet.cells };
+      const graph = getDependencyGraph(prev.activeSheetId);
+      const affectedDeps: Set<string> = new Set();
 
       for (let r = range.startRow; r <= range.endRow; r++) {
         for (let c = range.startCol; c <= range.endCol; c++) {
           const key = colNumberToLetter(c) + r;
+          graph.removeCell(key);
           delete newCells[key];
+
+          const dependents = graph.getDependents(key);
+          dependents.forEach(dep => affectedDeps.add(dep));
         }
       }
+
+      // Re-evaluate affected cells
+      Array.from(affectedDeps).forEach(dep => {
+        if (newCells[dep]) {
+          newCells[dep] = { ...newCells[dep], computed: undefined };
+        }
+      });
+
+      Array.from(affectedDeps).forEach(dep => {
+        if (newCells[dep]) {
+          newCells[dep].computed = getCellValue(dep, newCells);
+        }
+      });
 
       return {
         ...prev,
@@ -570,13 +685,16 @@ export const SpreadsheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
         }
       });
 
+      // Shift formulas cell coordinates
+      initializeSheetDependencyGraph(prev.activeSheetId, newCells);
+
       return {
         ...prev,
         sheets: {
           ...prev.sheets,
           [prev.activeSheetId]: {
             ...sheet,
-            cells: newCells,
+            cells: evaluateGrid(newCells),
             rowCount: sheet.rowCount + 1
           }
         }
@@ -605,15 +723,15 @@ export const SpreadsheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
         const row = parseInt(rowMatch[0], 10);
 
         if (row >= start && row < start + count) {
-          // Skip deleted rows
           return;
         } else if (row >= start + count) {
-          // Shift rows up
           newCells[`${col}${row - count}`] = cell;
         } else {
           newCells[key] = cell;
         }
       });
+
+      initializeSheetDependencyGraph(prev.activeSheetId, newCells);
 
       return {
         ...prev,
@@ -621,7 +739,7 @@ export const SpreadsheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
           ...prev.sheets,
           [prev.activeSheetId]: {
             ...sheet,
-            cells: newCells,
+            cells: evaluateGrid(newCells),
             rowCount: Math.max(1, sheet.rowCount - count)
           }
         }
@@ -654,13 +772,15 @@ export const SpreadsheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
         }
       });
 
+      initializeSheetDependencyGraph(prev.activeSheetId, newCells);
+
       return {
         ...prev,
         sheets: {
           ...prev.sheets,
           [prev.activeSheetId]: {
             ...sheet,
-            cells: newCells,
+            cells: evaluateGrid(newCells),
             colCount: sheet.colCount + 1
           }
         }
@@ -689,15 +809,15 @@ export const SpreadsheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
         const row = rowMatch[0];
 
         if (colNum >= start && colNum < start + count) {
-          // Skip deleted columns
           return;
         } else if (colNum >= start + count) {
-          // Shift columns left
           newCells[`${colNumberToLetter(colNum - count)}${row}`] = cell;
         } else {
           newCells[key] = cell;
         }
       });
+
+      initializeSheetDependencyGraph(prev.activeSheetId, newCells);
 
       return {
         ...prev,
@@ -705,7 +825,7 @@ export const SpreadsheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
           ...prev.sheets,
           [prev.activeSheetId]: {
             ...sheet,
-            cells: newCells,
+            cells: evaluateGrid(newCells),
             colCount: Math.max(1, sheet.colCount - count)
           }
         }
@@ -768,11 +888,9 @@ export const SpreadsheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
             delete newCells[destKey];
           }
 
-          // If cut, delete original
           if (clip.type === 'cut') {
             const isSelfPaste = clip.sheetId === prev.activeSheetId;
             if (isSelfPaste) {
-              // Delete only if it is outside of the dest key to prevent deleting overwriting cell
               if (r < range.startRow || r > range.startRow + (clip.range.endRow - clip.range.startRow) ||
                   c < range.startCol || c > range.startCol + (clip.range.endCol - clip.range.startCol)) {
                 delete newCells[srcKey];
@@ -784,22 +902,24 @@ export const SpreadsheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
         }
       }
 
+      // Rebuild dependencies after batch paste
+      initializeSheetDependencyGraph(prev.activeSheetId, newCells);
+
       return {
         ...prev,
         sheets: {
           ...prev.sheets,
           [prev.activeSheetId]: {
             ...activeSheet,
-            cells: newCells
+            cells: evaluateGrid(newCells)
           }
         },
-        clipboard: clip.type === 'cut' ? null : clip // Clear clipboard if cut
+        clipboard: clip.type === 'cut' ? null : clip
       };
     });
   };
 
   const saveWorkbook = () => {
-    // Save workbook mock
     console.log("Workbook Saved!", workbook);
     alert("Workbook state saved to cache!");
   };

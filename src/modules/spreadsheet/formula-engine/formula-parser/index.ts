@@ -1,242 +1,282 @@
 import { CellData } from '../../types';
-import { formulaLibrary } from '../formula-library';
+import { colLetterToNumber, colNumberToLetter } from '../../utils/gridUtils';
 
-// Helper to convert range letters
-function colLetterToNum(letter: string): number {
-  let num = 0;
-  for (let i = 0; i < letter.length; i++) {
-    num = num * 26 + (letter.charCodeAt(i) - 64);
-  }
-  return num;
-}
-function numToColLetter(num: number): string {
-  let temp = num;
-  let letter = '';
-  while (temp > 0) {
-    let modulo = (temp - 1) % 26;
-    letter = String.fromCharCode(65 + modulo) + letter;
-    temp = Math.floor((temp - modulo) / 26);
-  }
-  return letter;
+export type TokenType = 
+  | 'NUMBER' 
+  | 'STRING' 
+  | 'REF' 
+  | 'RANGE' 
+  | 'FUNCTION' 
+  | 'OPERATOR' 
+  | 'PAREN' 
+  | 'SEPARATOR';
+
+export interface Token {
+  type: TokenType;
+  value: string;
 }
 
-// Extract dependencies (all cell references inside a formula string)
+// Operator precedence definition
+export const PRECEDENCE: Record<string, number> = {
+  '=': 1, '<>': 1, '<': 1, '>': 1, '<=': 1, '>=': 1,
+  '+': 2, '-': 2,
+  '*': 3, '/': 3,
+  '^': 4,
+  '%': 5
+};
+
+// Tokenizes a formula string
+export function tokenize(formula: string): Token[] {
+  const tokens: Token[] = [];
+  let i = 0;
+  
+  // Strip starting '='
+  const clean = formula.startsWith('=') ? formula.substring(1) : formula;
+
+  while (i < clean.length) {
+    const char = clean[i];
+
+    // Skip whitespace
+    if (/\s/.test(char)) {
+      i++;
+      continue;
+    }
+
+    // 1. Double character comparison operators
+    if (i < clean.length - 1) {
+      const nextTwo = clean.substring(i, i + 2);
+      if (nextTwo === '<>' || nextTwo === '<=' || nextTwo === '>=') {
+        tokens.push({ type: 'OPERATOR', value: nextTwo });
+        i += 2;
+        continue;
+      }
+    }
+
+    // 2. Single character operators
+    if (['+', '-', '*', '/', '^', '%', '=', '<', '>'].includes(char)) {
+      tokens.push({ type: 'OPERATOR', value: char });
+      i++;
+      continue;
+    }
+
+    // 3. Parentheses
+    if (char === '(' || char === ')') {
+      tokens.push({ type: 'PAREN', value: char });
+      i++;
+      continue;
+    }
+
+    // 4. Argument separator
+    if (char === ',') {
+      tokens.push({ type: 'SEPARATOR', value: char });
+      i++;
+      continue;
+    }
+
+    // 5. String literal
+    if (char === '"') {
+      let str = '';
+      i++; // Skip opening quote
+      while (i < clean.length && clean[i] !== '"') {
+        str += clean[i];
+        i++;
+      }
+      i++; // Skip closing quote
+      tokens.push({ type: 'STRING', value: str });
+      continue;
+    }
+
+    // 6. Number literal
+    if (/[0-9.]/.test(char)) {
+      let num = '';
+      while (i < clean.length && /[0-9.]/.test(clean[i])) {
+        num += clean[i];
+        i++;
+      }
+      tokens.push({ type: 'NUMBER', value: num });
+      continue;
+    }
+
+    // 7. References, Ranges, or Functions
+    if (/[A-Za-z]/.test(char)) {
+      let identifier = '';
+      while (i < clean.length && /[A-Za-z0-9_.:]/.test(clean[i])) {
+        identifier += clean[i];
+        i++;
+      }
+
+      // Check if it's a range (contains ':')
+      if (identifier.includes(':')) {
+        tokens.push({ type: 'RANGE', value: identifier.toUpperCase() });
+      } 
+      // Check if it's followed by '(' -> function
+      else if (i < clean.length && clean[i] === '(') {
+        tokens.push({ type: 'FUNCTION', value: identifier.toUpperCase() });
+      } 
+      // Check if it's a cell reference (e.g. A1, AA12)
+      else if (/^[A-Z]+[0-9]+$/i.test(identifier)) {
+        tokens.push({ type: 'REF', value: identifier.toUpperCase() });
+      } 
+      // Boolean literal or fallback
+      else if (identifier.toUpperCase() === 'TRUE' || identifier.toUpperCase() === 'FALSE') {
+        tokens.push({ type: 'STRING', value: identifier.toUpperCase() });
+      } else {
+        tokens.push({ type: 'STRING', value: identifier });
+      }
+      continue;
+    }
+
+    // Fallback error token
+    tokens.push({ type: 'STRING', value: char });
+    i++;
+  }
+
+  return tokens;
+}
+
+// Convert infix tokens to postfix (RPN) using Shunting-Yard
+export function shuntingYard(tokens: Token[]): Token[] {
+  const outputQueue: Token[] = [];
+  const operatorStack: Token[] = [];
+  const argCounts: number[] = []; // Tracks function arguments count
+
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
+
+    switch (token.type) {
+      case 'NUMBER':
+      case 'STRING':
+      case 'REF':
+      case 'RANGE':
+        outputQueue.push(token);
+        break;
+
+      case 'FUNCTION':
+        operatorStack.push(token);
+        argCounts.push(1); // Start counting arguments
+        break;
+
+      case 'SEPARATOR':
+        // Resolve arguments inside function
+        while (
+          operatorStack.length > 0 && 
+          operatorStack[operatorStack.length - 1].value !== '('
+        ) {
+          outputQueue.push(operatorStack.pop()!);
+        }
+        if (argCounts.length > 0) {
+          argCounts[argCounts.length - 1]++;
+        }
+        break;
+
+      case 'OPERATOR': {
+        const o1 = token.value;
+        let top = operatorStack[operatorStack.length - 1];
+        
+        while (
+          top &&
+          top.type === 'OPERATOR' &&
+          (PRECEDENCE[top.value] > PRECEDENCE[o1] ||
+            (PRECEDENCE[top.value] === PRECEDENCE[o1] && o1 !== '^'))
+        ) {
+          outputQueue.push(operatorStack.pop()!);
+          top = operatorStack[operatorStack.length - 1];
+        }
+        operatorStack.push(token);
+        break;
+      }
+
+      case 'PAREN':
+        if (token.value === '(') {
+          operatorStack.push(token);
+        } else {
+          // Right parenthesis ')'
+          while (
+            operatorStack.length > 0 && 
+            operatorStack[operatorStack.length - 1].value !== '('
+          ) {
+            outputQueue.push(operatorStack.pop()!);
+          }
+          if (operatorStack.length === 0) {
+            throw new Error('Mismatched parentheses');
+          }
+          operatorStack.pop(); // Pop '('
+
+          // If top is function, pop it to output with its argument count!
+          const top = operatorStack[operatorStack.length - 1];
+          if (top && top.type === 'FUNCTION') {
+            const funcToken = operatorStack.pop()!;
+            const count = argCounts.pop() || 0;
+            // Append argument count to function value for evaluation
+            outputQueue.push({
+              type: 'FUNCTION',
+              value: `${funcToken.value}:${count}`
+            });
+          }
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  while (operatorStack.length > 0) {
+    const top = operatorStack.pop()!;
+    if (top.value === '(' || top.value === ')') {
+      throw new Error('Mismatched parentheses');
+    }
+    outputQueue.push(top);
+  }
+
+  return outputQueue;
+}
+
+// Helper to expand range string "A1:B3" to individual cell keys
+export function expandRange(rangeStr: string): string[] {
+  const parts = rangeStr.split(':');
+  if (parts.length < 2) return [rangeStr];
+  
+  const startMatch = parts[0].toUpperCase().match(/^([A-Z]+)([0-9]+)$/);
+  const endMatch = parts[1].toUpperCase().match(/^([A-Z]+)([0-9]+)$/);
+  if (!startMatch || !endMatch) return [rangeStr];
+
+  const startCol = colLetterToNumber(startMatch[1]);
+  const endCol = colLetterToNumber(endMatch[1]);
+  const startRow = parseInt(startMatch[2], 10);
+  const endRow = parseInt(endMatch[2], 10);
+
+  const minCol = Math.min(startCol, endCol);
+  const maxCol = Math.max(startCol, endCol);
+  const minRow = Math.min(startRow, endRow);
+  const maxRow = Math.max(startRow, endRow);
+
+  const cells: string[] = [];
+  for (let r = minRow; r <= maxRow; r++) {
+    for (let c = minCol; c <= maxCol; c++) {
+      cells.push(`${colNumberToLetter(c)}${r}`);
+    }
+  }
+  return cells;
+}
+
+// Extracts cell keys that a formula references (used for dependency tree tracking)
 export function getDependencies(formula: string): string[] {
   if (!formula.startsWith('=')) return [];
-  const clean = formula.substring(1);
-  const cellRegex = /[A-Z]+[0-9]+/g;
-  
-  // Find all ranges like A1:B3
-  const rangeRegex = /([A-Z]+[0-9]+):([A-Z]+[0-9]+)/g;
-  const deps: Set<string> = new Set();
-  
-  let match;
-  // Resolve ranges
-  while ((match = rangeRegex.exec(clean)) !== null) {
-    const startCell = match[1];
-    const endCell = match[2];
-    const startMatch = startCell.match(/^([A-Z]+)([0-9]+)$/);
-    const endMatch = endCell.match(/^([A-Z]+)([0-9]+)$/);
-    if (startMatch && endMatch) {
-      const startCol = colLetterToNum(startMatch[1]);
-      const endCol = colLetterToNum(endMatch[1]);
-      const startRow = parseInt(startMatch[2], 10);
-      const endRow = parseInt(endMatch[2], 10);
-      const minCol = Math.min(startCol, endCol);
-      const maxCol = Math.max(startCol, endCol);
-      const minRow = Math.min(startRow, endRow);
-      const maxRow = Math.max(startRow, endRow);
-      
-      for (let r = minRow; r <= maxRow; r++) {
-        for (let c = minCol; c <= maxCol; c++) {
-          deps.add(`${numToColLetter(c)}${r}`);
-        }
-      }
-    }
-  }
-
-  // Find remaining single cells
-  let singleMatch;
-  while ((singleMatch = cellRegex.exec(clean)) !== null) {
-    deps.add(singleMatch[0]);
-  }
-  
-  return Array.from(deps);
-}
-
-// Parses and evaluates a formula string
-export function parseAndEvaluate(
-  formula: string,
-  cells: Record<string, CellData>,
-  evaluatingCells: Set<string> = new Set()
-): string | number | boolean {
-  if (!formula.startsWith('=')) {
-    const num = Number(formula);
-    return isNaN(num) ? formula : num;
-  }
-
-  const expression = formula.substring(1).trim();
   
   try {
-    // 1. Check if it's a simple function call like SUM(A1:A3)
-    const funcMatch = expression.match(/^([A-Z]+)\((.*)\)$/i);
-    if (funcMatch) {
-      const funcName = funcMatch[1].toUpperCase();
-      const funcArgsRaw = funcMatch[2];
-      
-      if (formulaLibrary.has(funcName)) {
-        // Resolve arguments (comma-separated, but respecting brackets/ranges)
-        const args = parseArgs(funcArgsRaw, cells, evaluatingCells);
-        const executor = formulaLibrary.get(funcName)!;
-        return executor(args, cells);
+    const tokens = tokenize(formula);
+    const deps = new Set<string>();
+
+    tokens.forEach(tok => {
+      if (tok.type === 'REF') {
+        deps.add(tok.value);
+      } else if (tok.type === 'RANGE') {
+        expandRange(tok.value).forEach(c => deps.add(c));
       }
-      return '#NAME?';
-    }
+    });
 
-    // 2. Resolve basic arithmetic operations: e.g. A1*B1
-    return evaluateArithmeticExpression(expression, cells, evaluatingCells);
-  } catch (err) {
-    console.error("Formula parsing error: ", err);
-    return '#VALUE!';
+    return Array.from(deps);
+  } catch {
+    return [];
   }
-}
-
-// Splitting function arguments respecting commas and parentheses
-function parseArgs(argsStr: string, cells: Record<string, CellData>, evaluatingCells: Set<string>): any[] {
-  const args: any[] = [];
-  let bracketDepth = 0;
-  let currentArg = '';
-  
-  for (let i = 0; i < argsStr.length; i++) {
-    const char = argsStr[i];
-    if (char === '(') bracketDepth++;
-    if (char === ')') bracketDepth--;
-    
-    if (char === ',' && bracketDepth === 0) {
-      args.push(resolveArgValue(currentArg.trim(), cells, evaluatingCells));
-      currentArg = '';
-    } else {
-      currentArg += char;
-    }
-  }
-  
-  if (currentArg.trim() !== '') {
-    args.push(resolveArgValue(currentArg.trim(), cells, evaluatingCells));
-  }
-  
-  return args;
-}
-
-// Resolves a single argument (which can be a range, a cell ref, or a value)
-function resolveArgValue(arg: string, cells: Record<string, CellData>, evaluatingCells: Set<string>): any {
-  // Check if range: A1:B2
-  if (arg.includes(':')) {
-    const parts = arg.split(':');
-    const startMatch = parts[0].toUpperCase().match(/^([A-Z]+)([0-9]+)$/);
-    const endMatch = parts[1].toUpperCase().match(/^([A-Z]+)([0-9]+)$/);
-    if (startMatch && endMatch) {
-      const startCol = colLetterToNum(startMatch[1]);
-      const endCol = colLetterToNum(endMatch[1]);
-      const startRow = parseInt(startMatch[2], 10);
-      const endRow = parseInt(endMatch[2], 10);
-      const minCol = Math.min(startCol, endCol);
-      const maxCol = Math.max(startCol, endCol);
-      const minRow = Math.min(startRow, endRow);
-      const maxRow = Math.max(startRow, endRow);
-      
-      const values: any[] = [];
-      for (let r = minRow; r <= maxRow; r++) {
-        for (let c = minCol; c <= maxCol; c++) {
-          const key = `${numToColLetter(c)}${r}`;
-          values.push(getCellValue(key, cells, evaluatingCells));
-        }
-      }
-      return values;
-    }
-    return '#REF!';
-  }
-
-  // Check if single cell reference
-  if (/^[A-Z]+[0-9]+$/i.test(arg)) {
-    return getCellValue(arg.toUpperCase(), cells, evaluatingCells);
-  }
-
-  // Check if string literal
-  if (arg.startsWith('"') && arg.endsWith('"')) {
-    return arg.substring(1, arg.length - 1);
-  }
-
-  // Number or boolean
-  if (arg.toUpperCase() === 'TRUE') return true;
-  if (arg.toUpperCase() === 'FALSE') return false;
-  
-  const num = Number(arg);
-  return isNaN(num) ? arg : num;
-}
-
-// Gets the evaluated value of a cell
-function getCellValue(cellKey: string, cells: Record<string, CellData>, evaluatingCells: Set<string>): any {
-  if (evaluatingCells.has(cellKey)) {
-    return '#CIRC!'; // Circular dependency
-  }
-  
-  const cell = cells[cellKey];
-  if (!cell) return 0;
-  
-  if (cell.computed !== undefined) {
-    return cell.computed;
-  }
-  
-  // Evaluate cell lazily
-  evaluatingCells.add(cellKey);
-  const result = parseAndEvaluate(cell.value, cells, evaluatingCells);
-  evaluatingCells.delete(cellKey);
-  
-  return result;
-}
-
-// Simple arithmetic evaluator supporting +, -, *, /
-function evaluateArithmeticExpression(expr: string, cells: Record<string, CellData>, evaluatingCells: Set<string>): any {
-  // Resolve cell refs in expression first
-  let resolvedExpr = expr;
-  
-  // Find cell references and replace with their values
-  const cellRegex = /\b[A-Z]+[0-9]+\b/g;
-  let match;
-  const references: string[] = [];
-  while ((match = cellRegex.exec(expr)) !== null) {
-    references.push(match[0]);
-  }
-  
-  // Replace from longest cell reference to shortest to prevent partial replaces
-  references.sort((a, b) => b.length - a.length);
-  references.forEach(ref => {
-    const val = getCellValue(ref, cells, evaluatingCells);
-    const escapedVal = typeof val === 'string' ? `"${val}"` : val;
-    resolvedExpr = resolvedExpr.replace(new RegExp(`\\b${ref}\\b`, 'g'), String(escapedVal));
-  });
-
-  // Evaluate safely using Function constructor (standard parser fallback)
-  // Check for safe characters to prevent code injection
-  if (/^[0-9+\-*/().\s"']+$|^[0-9+\-*/().\s"']+&[0-9+\-*/().\s"']+$/.test(resolvedExpr)) {
-    try {
-      // Handle string concatenation like "Hello " & "World"
-      if (resolvedExpr.includes('&')) {
-        return resolvedExpr.split('&').map(part => {
-          // Eval each part
-          const cleanPart = part.trim();
-          if (cleanPart.startsWith('"') && cleanPart.endsWith('"')) {
-            return cleanPart.substring(1, cleanPart.length - 1);
-          }
-          const res = new Function(`return (${cleanPart})`)();
-          return String(res);
-        }).join('');
-      }
-      return new Function(`return (${resolvedExpr})`)();
-    } catch {
-      return '#VALUE!';
-    }
-  }
-
-  return expr;
 }

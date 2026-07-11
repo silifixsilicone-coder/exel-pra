@@ -19,6 +19,7 @@ export interface CellData {
   };
   format?: 'general' | 'currency' | 'percent' | 'date' | 'time';
   mergedInto?: string; // Cell address reference (e.g. "A1") if merged
+  dataType?: 'text' | 'number' | 'boolean' | 'date' | 'time' | 'formula' | 'blank';
 }
 
 export interface CellRange {

@@ -1,16 +1,17 @@
 import { CellData } from '../types';
-import { parseAndEvaluate } from './formula-parser';
+import { getCellValue } from './formula-evaluator';
 
 // Import function files to ensure self-registration
 import './formula-functions/math';
 import './formula-functions/logical';
 import './formula-functions/text';
 import './formula-functions/lookup';
+import './formula-functions/date';
 
 export function evaluateGrid(cells: Record<string, CellData>): Record<string, CellData> {
   const result: Record<string, CellData> = {};
   
-  // Clone cells and clear previous evaluation cache
+  // Clone cells and clear previously computed cache
   Object.keys(cells).forEach(key => {
     result[key] = { 
       ...cells[key],
@@ -18,21 +19,9 @@ export function evaluateGrid(cells: Record<string, CellData>): Record<string, Ce
     };
   });
 
-  // Evaluate formulas
+  // Evaluate cell values recursively (getCellValue handles lazy evaluation, dependency resolution, and circular loop checks)
   Object.keys(result).forEach(key => {
-    const cell = result[key];
-    if (cell.value.startsWith('=')) {
-      cell.computed = parseAndEvaluate(cell.value, result);
-    } else {
-      // Parse plain values
-      const val = cell.value;
-      if (val === '') {
-        cell.computed = '';
-      } else {
-        const num = Number(val);
-        cell.computed = isNaN(num) ? val : num;
-      }
-    }
+    result[key].computed = getCellValue(key, result);
   });
 
   // Resolve merged cell display values

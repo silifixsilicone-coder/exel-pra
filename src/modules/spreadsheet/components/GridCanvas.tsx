@@ -5,6 +5,7 @@ import { useSpreadsheet } from '../context/SpreadsheetContext';
 import { colNumberToLetter, colLetterToNumber, getCellAddress, parseCellAddress } from '../utils/gridUtils';
 import { evaluateGrid } from '../formula-engine/evaluator';
 import ContextMenu from './ContextMenu';
+import FormulaAutocomplete, { getSearchWord } from './FormulaAutocomplete';
 
 const ROW_HEIGHT = 25;
 const COL_WIDTH = 100;
@@ -475,19 +476,51 @@ export default function GridCanvas() {
         )}
 
         {/* 2. Active Cell Edit input Overlay */}
-        {editingCell && editorStyle && (
-          <input
-            ref={inputRef}
-            style={editorStyle}
-            value={editValue}
-            onChange={(e) => {
-              setEditValue(e.target.value);
-              updateCell(editingCell, e.target.value);
-            }}
-            onBlur={() => stopEditing(true)}
-            className="absolute bg-slate-950 text-slate-100 border border-emerald-500 font-mono text-xs px-2 z-40 outline-none shadow-xl"
-          />
-        )}
+        {editingCell && editorStyle && (() => {
+          const searchInfo = getSearchWord(editValue);
+          const shouldShowSuggestions = !!(searchInfo && searchInfo.word.length > 0);
+
+          const handleInputBlur = () => {
+            setTimeout(() => {
+              stopEditing(true);
+            }, 200);
+          };
+
+          return (
+            <>
+              <input
+                ref={inputRef}
+                style={editorStyle}
+                value={editValue}
+                onChange={(e) => {
+                  setEditValue(e.target.value);
+                  updateCell(editingCell, e.target.value);
+                }}
+                onBlur={handleInputBlur}
+                className="absolute bg-slate-950 text-slate-100 border border-emerald-500 font-mono text-xs px-2 z-40 outline-none shadow-xl"
+              />
+              {shouldShowSuggestions && (
+                <div 
+                  style={{
+                    position: 'absolute',
+                    top: Number(editorStyle.top) + Number(editorStyle.height) + 2,
+                    left: editorStyle.left,
+                    zIndex: 50
+                  }}
+                >
+                  <FormulaAutocomplete
+                    val={editValue}
+                    onSelect={(completed) => {
+                      setEditValue(completed);
+                      updateCell(editingCell, completed);
+                    }}
+                    onClose={() => stopEditing(false)}
+                  />
+                </div>
+              )}
+            </>
+          );
+        })()}
       </div>
 
       {/* 3. Context Menu dropdown */}

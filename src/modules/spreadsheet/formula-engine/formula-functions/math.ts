@@ -1,4 +1,5 @@
 import { formulaLibrary } from '../formula-library';
+import { FormulaError } from '../formula-errors';
 
 // Helper to flatten args (which may contain ranges or arrays of values)
 export function flattenArgs(args: any[]): any[] {
@@ -6,7 +7,7 @@ export function flattenArgs(args: any[]): any[] {
   args.forEach(arg => {
     if (Array.isArray(arg)) {
       result.push(...flattenArgs(arg));
-    } else {
+    } else if (arg !== null && arg !== undefined) {
       result.push(arg);
     }
   });
@@ -17,18 +18,20 @@ export function parseNumber(val: any): number {
   if (typeof val === 'number') return val;
   if (typeof val === 'string') {
     const num = parseFloat(val);
-    return isNaN(num) ? 0 : num;
+    if (isNaN(num)) throw new Error(FormulaError.VALUE);
+    return num;
   }
-  return 0;
+  if (typeof val === 'boolean') return val ? 1 : 0;
+  throw new Error(FormulaError.VALUE);
 }
 
-// Register SUM
+// SUM
 formulaLibrary.register('SUM', (args) => {
   const flat = flattenArgs(args);
   return flat.reduce((sum, val) => sum + parseNumber(val), 0);
 });
 
-// Register AVERAGE
+// AVERAGE
 formulaLibrary.register('AVERAGE', (args) => {
   const flat = flattenArgs(args);
   if (flat.length === 0) return 0;
@@ -36,7 +39,7 @@ formulaLibrary.register('AVERAGE', (args) => {
   return sum / flat.length;
 });
 
-// Register COUNT
+// COUNT
 formulaLibrary.register('COUNT', (args) => {
   const flat = flattenArgs(args);
   return flat.filter(val => {
@@ -44,20 +47,79 @@ formulaLibrary.register('COUNT', (args) => {
     if (typeof val === 'string') {
       return !isNaN(parseFloat(val)) && isFinite(Number(val));
     }
-    return false;
+    return typeof val === 'boolean';
   }).length;
 });
 
-// Register MIN
+// COUNTA
+formulaLibrary.register('COUNTA', (args) => {
+  const flat = flattenArgs(args);
+  return flat.filter(val => val !== '').length;
+});
+
+// MIN
 formulaLibrary.register('MIN', (args) => {
   const flat = flattenArgs(args);
   if (flat.length === 0) return 0;
   return Math.min(...flat.map(parseNumber));
 });
 
-// Register MAX
+// MAX
 formulaLibrary.register('MAX', (args) => {
   const flat = flattenArgs(args);
   if (flat.length === 0) return 0;
   return Math.max(...flat.map(parseNumber));
+});
+
+// ABS
+formulaLibrary.register('ABS', (args) => {
+  if (args.length === 0) throw new Error(FormulaError.VALUE);
+  return Math.abs(parseNumber(args[0]));
+});
+
+// ROUND
+formulaLibrary.register('ROUND', (args) => {
+  if (args.length < 2) throw new Error(FormulaError.VALUE);
+  const num = parseNumber(args[0]);
+  const decimals = parseNumber(args[1]);
+  const factor = Math.pow(10, decimals);
+  return Math.round(num * factor) / factor;
+});
+
+// ROUNDUP
+formulaLibrary.register('ROUNDUP', (args) => {
+  if (args.length < 2) throw new Error(FormulaError.VALUE);
+  const num = parseNumber(args[0]);
+  const decimals = parseNumber(args[1]);
+  const factor = Math.pow(10, decimals);
+  const sign = num >= 0 ? 1 : -1;
+  return (sign * Math.ceil(Math.abs(num) * factor)) / factor;
+});
+
+// ROUNDDOWN
+formulaLibrary.register('ROUNDDOWN', (args) => {
+  if (args.length < 2) throw new Error(FormulaError.VALUE);
+  const num = parseNumber(args[0]);
+  const decimals = parseNumber(args[1]);
+  const factor = Math.pow(10, decimals);
+  const sign = num >= 0 ? 1 : -1;
+  return (sign * Math.floor(Math.abs(num) * factor)) / factor;
+});
+
+// POWER
+formulaLibrary.register('POWER', (args) => {
+  if (args.length < 2) throw new Error(FormulaError.VALUE);
+  const base = parseNumber(args[0]);
+  const exponent = parseNumber(args[1]);
+  const res = Math.pow(base, exponent);
+  if (isNaN(res) || !isFinite(res)) throw new Error(FormulaError.NUM);
+  return res;
+});
+
+// SQRT
+formulaLibrary.register('SQRT', (args) => {
+  if (args.length === 0) throw new Error(FormulaError.VALUE);
+  const num = parseNumber(args[0]);
+  if (num < 0) throw new Error(FormulaError.NUM);
+  return Math.sqrt(num);
 });
