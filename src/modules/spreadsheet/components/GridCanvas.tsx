@@ -7,10 +7,10 @@ import { evaluateGrid } from '../formula-engine/evaluator';
 import ContextMenu from './ContextMenu';
 import FormulaAutocomplete, { getSearchWord } from './FormulaAutocomplete';
 
-const ROW_HEIGHT = 25;
-const COL_WIDTH = 100;
-const ROW_HEADER_WIDTH = 48;
-const COL_HEADER_HEIGHT = 25;
+const ROW_HEIGHT = 28;
+const COL_WIDTH = 120;
+const ROW_HEADER_WIDTH = 50;
+const COL_HEADER_HEIGHT = 28;
 
 export default function GridCanvas() {
   const {
@@ -366,18 +366,22 @@ export default function GridCanvas() {
 
           <thead>
             {/* Header Column letters */}
-            <tr className="bg-slate-900 sticky top-0 z-30 h-[25px]">
+            <tr className="bg-slate-900 sticky top-0 z-30" style={{ height: COL_HEADER_HEIGHT }}>
               {/* Intersection corner */}
-              <th className="sticky left-0 top-0 z-40 bg-slate-900 border-r border-b border-slate-800 text-[10px] text-slate-550 font-bold select-none text-center cursor-default h-[25px]" />
+              <th 
+                style={{ height: COL_HEADER_HEIGHT }}
+                className="sticky left-0 top-0 z-40 bg-slate-900 border-r border-b border-grid-border text-[10px] text-slate-555 font-bold select-none text-center cursor-default" 
+              />
               {/* Left spacer cell */}
               {visibleColsStart > 1 && (
-                <th className="bg-slate-900/60 border-b border-slate-800" />
+                <th className="bg-slate-900/60 border-b border-grid-border" />
               )}
               {cols.map(c => (
                 <th
                   key={c}
                   onClick={() => selectCol(c)}
-                  className="bg-slate-900 border-r border-b border-slate-800 text-[10px] text-slate-450 hover:text-white font-bold select-none text-center cursor-pointer h-[25px]"
+                  style={{ height: COL_HEADER_HEIGHT }}
+                  className="bg-slate-900 border-r border-b border-grid-border text-[10px] text-slate-450 hover:text-white font-bold select-none text-center cursor-pointer"
                 >
                   {colNumberToLetter(c)}
                 </th>
@@ -389,8 +393,8 @@ export default function GridCanvas() {
             {/* Top spacer row */}
             {visibleRowsStart > 1 && (
               <tr style={{ height: (visibleRowsStart - 1) * ROW_HEIGHT }}>
-                <td className="sticky left-0 bg-slate-900 border-r border-slate-800" />
-                <td colSpan={cols.length + 1} />
+                <td className="sticky left-0 bg-slate-900 border-r border-grid-border" />
+                <td colSpan={visibleColsStart > 1 ? cols.length + 1 : cols.length} />
               </tr>
             )}
 
@@ -400,12 +404,13 @@ export default function GridCanvas() {
                 {/* Row number header */}
                 <td
                   onClick={() => selectRow(r)}
-                  className="sticky left-0 z-25 bg-slate-900 border-r border-b border-slate-800 text-[10px] text-slate-450 hover:text-white font-bold text-center select-none cursor-pointer h-[25px]"
+                  style={{ height: ROW_HEIGHT }}
+                  className="sticky left-0 z-25 bg-slate-900 border-r border-b border-grid-border text-[10px] text-slate-450 hover:text-white font-bold text-center select-none cursor-pointer"
                 >
                   {r}
                 </td>
                 {/* Left spacer cell */}
-                {visibleColsStart > 1 && <td className="border-r border-b border-slate-900" />}
+                {visibleColsStart > 1 && <td className="border-r border-b border-grid-border" />}
 
                 {cols.map(c => {
                   const key = getCellAddress(r, c);
@@ -414,7 +419,7 @@ export default function GridCanvas() {
                   const isMerged = !!rawCell?.mergedInto;
 
                   // Rendered styling
-                  let cellStyleClass = 'border-r border-b border-slate-900 px-2 truncate h-[25px] overflow-hidden text-xs text-left align-middle select-none';
+                  let cellStyleClass = 'border-r border-b border-grid-border px-2 truncate overflow-hidden text-xs text-left align-middle select-none bg-grid-bg hover:bg-hover-bg/30';
                   
                   if (rawCell) {
                     if (rawCell.bold) cellStyleClass += ' font-bold';
@@ -454,6 +459,7 @@ export default function GridCanvas() {
                         color: rawCell?.color || undefined,
                         fontFamily: rawCell?.fontFamily || undefined,
                         fontSize: rawCell?.fontSize ? `${rawCell.fontSize}px` : undefined,
+                        height: ROW_HEIGHT
                       }}
                     >
                       {displayVal}
@@ -498,7 +504,7 @@ export default function GridCanvas() {
                   updateCell(editingCell, e.target.value);
                 }}
                 onBlur={handleInputBlur}
-                className="absolute bg-slate-950 text-slate-100 border border-emerald-500 font-mono text-xs px-2 z-40 outline-none shadow-xl"
+                className="absolute bg-grid-bg text-foreground border border-emerald-500 font-mono text-xs px-2 z-40 outline-none shadow-xl"
               />
               {shouldShowSuggestions && (
                 <div 
