@@ -13,7 +13,8 @@ import {
   Menu, 
   X, 
   TrendingUp,
-  LayoutDashboard
+  LayoutDashboard,
+  Table
 } from 'lucide-react';
 import { useProgress } from '../../hooks/useProgress';
 
@@ -42,6 +43,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     { name: 'Practice', href: '/practice', icon: Grid },
     { name: 'Job Mode', href: '/job', icon: Briefcase },
     { name: 'Exams', href: '/exam', icon: GraduationCap },
+    { name: 'Spreadsheet', href: '/spreadsheet', icon: Table },
     { name: 'Progress', href: '/progress', icon: BarChart3 },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
