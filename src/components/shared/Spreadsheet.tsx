@@ -372,7 +372,13 @@ export default function Spreadsheet({ initialState, onChange, readOnly = false }
 
       {/* 3. Grid Canvas Container */}
       <div className="flex-1 overflow-auto bg-grid-bg custom-scrollbar">
-        <table className="w-full border-collapse table-fixed select-none">
+        <table className="w-max min-w-full border-collapse select-none">
+          <colgroup>
+            <col style={{ width: '48px' }} />
+            {cols.map((col) => (
+              <col key={col} style={{ width: '110px' }} />
+            ))}
+          </colgroup>
           <thead>
             <tr className="bg-card-bg/60 sticky top-0 z-10">
               {/* Top-Left Empty Column Row Selector */}
