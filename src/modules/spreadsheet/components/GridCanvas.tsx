@@ -306,6 +306,9 @@ export default function GridCanvas() {
     (_, i) => visibleRowsStart + i
   );
 
+  const spacerWidth = visibleColsStart > 1 ? (visibleColsStart - 1) * COL_WIDTH : 0;
+  const visibleWidth = ROW_HEADER_WIDTH + spacerWidth + cols.length * COL_WIDTH;
+
   const totalWidth = ROW_HEADER_WIDTH + activeSheet.colCount * COL_WIDTH;
   const totalHeight = COL_HEADER_HEIGHT + activeSheet.rowCount * ROW_HEIGHT;
 
@@ -349,7 +352,7 @@ export default function GridCanvas() {
         {/* Visible Rendered grid table */}
         <table 
           ref={tableRef}
-          style={{ width: totalWidth }}
+          style={{ width: visibleWidth }}
           className="border-collapse table-fixed absolute left-0 top-0 select-none font-mono"
         >
           {/* Column sizing details */}
