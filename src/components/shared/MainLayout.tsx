@@ -54,6 +54,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
+  if (pathname === '/') {
+    return <div className="min-h-screen bg-slate-950 text-slate-100 overflow-y-auto w-full">{children}</div>;
+  }
+
   return (
     <div className="flex h-screen bg-background text-foreground font-sans overflow-hidden">
       
