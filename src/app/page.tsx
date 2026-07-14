@@ -112,14 +112,6 @@ export default function LandingPage() {
             >
               Start Practicing
             </Link>
-            <a 
-              href="https://github.com" 
-              target="_blank" 
-              rel="noreferrer"
-              className="px-3 py-2 bg-slate-850 hover:bg-slate-800 border border-slate-700 rounded-xl transition hidden sm:inline-block text-xs font-semibold text-slate-200"
-            >
-              GitHub
-            </a>
           </div>
         </div>
       </header>
