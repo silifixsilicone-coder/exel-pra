@@ -14,7 +14,10 @@ import {
   X, 
   TrendingUp,
   LayoutDashboard,
-  Table
+  Table,
+  Keyboard,
+  HelpCircle,
+  Bookmark
 } from 'lucide-react';
 import { useProgress } from '../../hooks/useProgress';
 
@@ -41,7 +44,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'Learn', href: '/learn', icon: BookOpen },
     { name: 'Practice', href: '/practice', icon: Grid },
+    { name: 'Formula Library', href: '/formula-library', icon: Bookmark },
+    { name: 'Shortcut Lab', href: '/shortcut-lab', icon: Keyboard },
     { name: 'Job Mode', href: '/job', icon: Briefcase },
+    { name: 'Interview Lab', href: '/interview-lab', icon: HelpCircle },
     { name: 'Exams', href: '/exam', icon: GraduationCap },
     { name: 'Spreadsheet', href: '/spreadsheet', icon: Table },
     { name: 'Progress', href: '/progress', icon: BarChart3 },
