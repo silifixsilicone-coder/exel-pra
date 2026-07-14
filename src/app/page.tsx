@@ -171,7 +171,7 @@ export default function Dashboard() {
       </div>
 
       {/* 2. Top Section: Continue Learning Card */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-6 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+      <div className="hidden md:flex bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-6 shadow-xl flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
         <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/5 blur-2xl rounded-full pointer-events-none" />
         <div className="flex items-start gap-4">
           <div className="p-3.5 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20 shrink-0">
@@ -367,7 +367,7 @@ export default function Dashboard() {
         <div className="space-y-6">
           
           {/* Progress Summary Card */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+          <div className="hidden md:block bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
             <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
               <Award className="w-4 h-4 text-emerald-400" />
               Practice Progress
