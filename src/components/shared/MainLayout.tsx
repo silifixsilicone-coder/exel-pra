@@ -41,7 +41,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   }, []);
 
   const navigationItems = [
-    { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Learn', href: '/learn', icon: BookOpen },
     { name: 'Practice', href: '/practice', icon: Grid },
     { name: 'Formula Library', href: '/formula-library', icon: Bookmark },
