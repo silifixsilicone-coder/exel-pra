@@ -49,7 +49,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
     { name: 'Job Mode', href: '/job', icon: Briefcase },
     { name: 'Interview Lab', href: '/interview-lab', icon: HelpCircle },
     { name: 'Exams', href: '/exam', icon: GraduationCap },
-    { name: 'Spreadsheet', href: '/spreadsheet', icon: Table },
     { name: 'Progress', href: '/progress', icon: BarChart3 },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
