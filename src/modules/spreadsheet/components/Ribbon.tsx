@@ -23,6 +23,7 @@ import {
   Maximize2
 } from 'lucide-react';
 import { useSpreadsheet } from '../context/SpreadsheetContext';
+import { useBI } from '../bi/context/BIContext';
 
 const fontFamilies = ['Calibri', 'Arial', 'Inter', 'Segoe UI', 'Times New Roman', 'Courier New'];
 const fontSizes = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 36, 48, 72];
@@ -36,8 +37,19 @@ export default function Ribbon() {
     copy, 
     cut, 
     paste,
-    activeSheet
+    activeSheet,
+    updateCell
   } = useSpreadsheet();
+
+  const {
+    activeView,
+    setActiveView,
+    collapsiblePanel,
+    setCollapsiblePanel,
+    addChart,
+    addDashboardWidget,
+    loadTemplate
+  } = useBI();
 
   const [activeFontFamily, setActiveFontFamily] = useState('Calibri');
   const [activeFontSize, setActiveFontSize] = useState(11);
@@ -341,7 +353,123 @@ export default function Ribbon() {
           </>
         )}
 
-        {activeTab !== 'Home' && (
+        {activeTab === 'Insert' && (
+          <div className="flex items-center gap-4 h-full text-slate-300">
+            {/* Chart Insert buttons */}
+            <div className="flex items-center gap-1.5 border-r border-slate-800/80 pr-4 h-full">
+              {['column', 'bar', 'line', 'area', 'pie', 'doughnut'].map(chartType => (
+                <button
+                  key={chartType}
+                  onClick={() => addChart(chartType as any)}
+                  className="px-2.5 py-1 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg text-[10px] font-semibold transition capitalize"
+                >
+                  {chartType}
+                </button>
+              ))}
+              <span className="text-[9px] text-slate-500 self-end font-bold font-sans uppercase">Charts</span>
+            </div>
+
+            {/* Pivot table & widgets section */}
+            <div className="flex items-center gap-2 h-full">
+              <button
+                onClick={() => setActiveView('pivot')}
+                className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-[10px] transition"
+              >
+                Insert Pivot Table
+              </button>
+              <button
+                onClick={() => addDashboardWidget({ type: 'kpi', title: 'Sales Summary KPI', w: 3, h: 2, config: { prefix: '$', value: '1,450' } })}
+                className="px-3 py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-[10px] font-semibold transition"
+              >
+                Insert KPI Card
+              </button>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'Data' && (
+          <div className="flex items-center gap-4 h-full text-slate-350">
+            {/* Template loaders */}
+            <div className="flex items-center gap-2 border-r border-slate-800/80 pr-4 h-full">
+              <button
+                onClick={() => loadTemplate('gst', (cells) => {
+                  Object.entries(cells).forEach(([key, cell]: [string, any]) => updateCell(key, cell.value));
+                })}
+                className="px-2.5 py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-[10px] font-semibold transition"
+              >
+                GST Billing Template
+              </button>
+              <button
+                onClick={() => loadTemplate('inventory', (cells) => {
+                  Object.entries(cells).forEach(([key, cell]: [string, any]) => updateCell(key, cell.value));
+                })}
+                className="px-2.5 py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-[10px] font-semibold transition"
+              >
+                Inventory Sheet
+              </button>
+              <button
+                onClick={() => loadTemplate('crm', (cells) => {
+                  Object.entries(cells).forEach(([key, cell]: [string, any]) => updateCell(key, cell.value));
+                })}
+                className="px-2.5 py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-[10px] font-semibold transition"
+              >
+                Sales CRM Tracker
+              </button>
+              <span className="text-[9px] text-slate-500 self-end font-bold font-sans uppercase">Templates</span>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'View' && (
+          <div className="flex items-center gap-4 h-full text-slate-350">
+            {/* View selectors */}
+            <div className="flex items-center gap-2 border-r border-slate-800/80 pr-4 h-full">
+              <button
+                onClick={() => setActiveView('grid')}
+                className={`px-3 py-1.5 rounded-xl text-[10px] font-bold transition ${activeView === 'grid' ? 'bg-emerald-500 text-slate-950' : 'bg-slate-950 text-slate-300'}`}
+              >
+                Grid View
+              </button>
+              <button
+                onClick={() => setActiveView('dashboard')}
+                className={`px-3 py-1.5 rounded-xl text-[10px] font-bold transition ${activeView === 'dashboard' ? 'bg-emerald-500 text-slate-950' : 'bg-slate-950 text-slate-300'}`}
+              >
+                Dashboard View
+              </button>
+              <button
+                onClick={() => setActiveView('pivot')}
+                className={`px-3 py-1.5 rounded-xl text-[10px] font-bold transition ${activeView === 'pivot' ? 'bg-emerald-500 text-slate-950' : 'bg-slate-950 text-slate-300'}`}
+              >
+                Pivot View
+              </button>
+              <span className="text-[9px] text-slate-500 self-end font-bold font-sans uppercase">Workbook Views</span>
+            </div>
+
+            {/* Sidebar toggle buttons */}
+            <div className="flex items-center gap-2 h-full">
+              <button
+                onClick={() => setCollapsiblePanel(collapsiblePanel === 'ai-insights' ? 'none' : 'ai-insights')}
+                className={`px-2.5 py-1.5 rounded-xl text-[10px] font-semibold transition ${collapsiblePanel === 'ai-insights' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-950 text-slate-400'}`}
+              >
+                AI Insights Panel
+              </button>
+              <button
+                onClick={() => setCollapsiblePanel(collapsiblePanel === 'recommendations' ? 'none' : 'recommendations')}
+                className={`px-2.5 py-1.5 rounded-xl text-[10px] font-semibold transition ${collapsiblePanel === 'recommendations' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-950 text-slate-400'}`}
+              >
+                Recommendations
+              </button>
+              <button
+                onClick={() => setCollapsiblePanel(collapsiblePanel === 'natural-language' ? 'none' : 'natural-language')}
+                className={`px-2.5 py-1.5 rounded-xl text-[10px] font-semibold transition ${collapsiblePanel === 'natural-language' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-950 text-slate-400'}`}
+              >
+                AI Query Bar
+              </button>
+            </div>
+          </div>
+        )}
+
+        {activeTab !== 'Home' && activeTab !== 'Insert' && activeTab !== 'Data' && activeTab !== 'View' && (
           <div className="flex items-center gap-3 text-slate-400 text-xs font-medium">
             <Lock className="w-4 h-4 text-slate-500" />
             <span>Options under tab <strong className="text-slate-200">{activeTab}</strong> are currently locked. Double click grid to edit cells directly.</span>
