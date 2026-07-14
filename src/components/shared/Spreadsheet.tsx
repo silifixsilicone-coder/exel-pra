@@ -24,6 +24,7 @@ export default function Spreadsheet({ initialState, onChange, readOnly = false }
   const [selectedCell, setSelectedCell] = useState<string>('A1');
   const [editingCell, setEditingCell] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
+  const [activeSheetTab, setActiveSheetTab] = useState<string>('Sheet1');
   
   const cellInputRef = useRef<HTMLInputElement>(null);
   const formulaInputRef = useRef<HTMLInputElement>(null);
@@ -468,12 +469,30 @@ export default function Spreadsheet({ initialState, onChange, readOnly = false }
           </tbody>
         </table>
       </div>
-      {/* 4. Bottom Grid Status Bar */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-card-bg border-t border-border-custom text-[11px] font-medium text-text-muted font-mono">
-        <div>Sheet1</div>
-        <div className="flex items-center gap-3">
-          <span>Formula Check Enabled</span>
-          <span>Caps Lock Alert: OK</span>
+      {/* 4. Bottom Sheet Tabs Bar */}
+      <div className="flex items-center justify-between px-3 bg-slate-900 border-t border-border-custom text-xs font-mono select-none h-9 shrink-0">
+        <div className="flex items-center h-full">
+          {['Sheet1', 'Sheet2', 'Sheet3'].map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveSheetTab(tab)}
+              className={`h-full px-4 flex items-center border-r border-border-custom font-semibold transition ${
+                activeSheetTab === tab
+                  ? 'bg-grid-bg text-emerald-550 border-t-2 border-t-emerald-500 font-bold'
+                  : 'text-text-muted hover:text-foreground hover:bg-hover-bg'
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+          <button className="h-full px-3 text-text-muted hover:text-foreground hover:bg-hover-bg transition border-r border-border-custom">
+            +
+          </button>
+        </div>
+        <div className="flex items-center gap-3 text-[10px] text-text-muted font-mono">
+          <span>Ready</span>
+          <div className="h-3 w-[1px] bg-border-custom" />
+          <span>Zoom: 100%</span>
         </div>
       </div>
     </div>
