@@ -13,6 +13,8 @@ export default function NLQueryPanel() {
   const [queryText, setQueryText] = useState('');
   const [result, setResult] = useState<QueryResult | null>(null);
 
+  if (collapsiblePanel !== 'natural-language') return null;
+
   const handleRunQuery = () => {
     if (!queryText.trim()) return;
     const res = parseNaturalLanguageQuery(queryText);
@@ -27,7 +29,6 @@ export default function NLQueryPanel() {
     setQueryText('');
   };
 
-  if (collapsiblePanel !== 'natural-language') return null;
 
   return (
     <div className="w-80 bg-slate-900 border-l border-slate-800 p-5 shrink-0 flex flex-col justify-between shadow-2xl z-40 select-none animate-in slide-in-from-right duration-250">

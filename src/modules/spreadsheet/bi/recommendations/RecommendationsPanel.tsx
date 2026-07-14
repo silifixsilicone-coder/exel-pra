@@ -10,6 +10,8 @@ export default function RecommendationsPanel() {
   const { activeSheet } = useSpreadsheet();
   const { collapsiblePanel, setCollapsiblePanel } = useBI();
 
+  if (collapsiblePanel !== 'recommendations') return null;
+
   const range = { startRow: 1, startCol: 0, endRow: 4, endCol: 1 };
   const { labels, numbers } = parseRangeData(range, activeSheet.cells);
   const metrics = calculateMetrics(numbers);
@@ -35,7 +37,7 @@ export default function RecommendationsPanel() {
 
   // Formula checks
   Object.entries(activeSheet.cells).forEach(([key, cell]) => {
-    if (cell.value.startsWith('=')) {
+    if (cell && cell.value && cell.value.startsWith('=')) {
       if (cell.computed && String(cell.computed).startsWith('#')) {
         issues.push(`Formula error: cell ${key} returned evaluation error "${cell.computed}".`);
       }
@@ -51,7 +53,6 @@ export default function RecommendationsPanel() {
 
   recommendations.push('Clean unused columns beyond D to optimize workbook load times.');
 
-  if (collapsiblePanel !== 'recommendations') return null;
 
   return (
     <div className="w-80 bg-slate-900 border-l border-slate-800 p-5 shrink-0 flex flex-col justify-between shadow-2xl z-40 select-none animate-in slide-in-from-right duration-250">

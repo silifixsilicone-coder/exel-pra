@@ -10,6 +10,8 @@ export default function AIInsightsPanel() {
   const { activeSheet } = useSpreadsheet();
   const { collapsiblePanel, setCollapsiblePanel } = useBI();
 
+  if (collapsiblePanel !== 'ai-insights') return null;
+
   // Parse first 5 rows (B2:C5 range)
   const range = { startRow: 1, startCol: 0, endRow: 4, endCol: 1 };
   const { labels, numbers } = parseRangeData(range, activeSheet.cells);
@@ -41,7 +43,6 @@ export default function AIInsightsPanel() {
     insights.push('Add numeric values to columns B to generate real-time AI BI insights.');
   }
 
-  if (collapsiblePanel !== 'ai-insights') return null;
 
   return (
     <div className="w-80 bg-slate-900 border-l border-slate-800 p-5 shrink-0 flex flex-col justify-between shadow-2xl z-40 select-none animate-in slide-in-from-right duration-250">
