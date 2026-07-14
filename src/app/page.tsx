@@ -44,7 +44,7 @@ export default function LandingPage() {
   // Monitor scroll for header background toggle
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 50) {
+      if (window.scrollY > 30) {
         setScrolled(true);
       } else {
         setScrolled(false);
@@ -76,31 +76,31 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-emerald-500 selection:text-slate-950">
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans antialiased selection:bg-emerald-500 selection:text-white">
       
       {/* 1. Header Sticky Navbar */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-350 ${
         scrolled 
-          ? 'bg-white text-slate-900 shadow-md py-3' 
-          : 'bg-transparent text-slate-100 py-5'
+          ? 'bg-white/95 backdrop-blur border-b border-slate-200/80 shadow-sm py-3 text-slate-900' 
+          : 'bg-transparent text-slate-800 py-5'
       }`}>
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/10">
-              <span className={`font-mono font-bold text-slate-950 text-lg`}>P</span>
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow shadow-emerald-500/10">
+              <span className="font-mono font-bold text-white text-lg">P</span>
             </div>
-            <span className="font-bold text-xl tracking-tight">Path Excel</span>
+            <span className="font-bold text-xl tracking-tight text-slate-900">Path Excel</span>
           </Link>
 
           {/* Nav Items */}
-          <nav className="hidden lg:flex items-center gap-6 text-xs font-semibold">
-            <Link href="/learn" className="hover:text-emerald-500 transition">Learn</Link>
-            <Link href="/practice" className="hover:text-emerald-500 transition">Practice</Link>
-            <Link href="/formula-library" className="hover:text-emerald-500 transition">Formula Library</Link>
-            <Link href="/shortcut-lab" className="hover:text-emerald-500 transition">Shortcut Lab</Link>
-            <Link href="/job" className="hover:text-emerald-500 transition">Job Mode</Link>
-            <Link href="/interview-lab" className="hover:text-emerald-500 transition">Interview Lab</Link>
-            <Link href="/exam" className="hover:text-emerald-500 transition">Exams</Link>
+          <nav className="hidden lg:flex items-center gap-6 text-xs font-semibold text-slate-650">
+            <Link href="/learn" className="hover:text-emerald-600 transition">Learn</Link>
+            <Link href="/practice" className="hover:text-emerald-600 transition">Practice</Link>
+            <Link href="/formula-library" className="hover:text-emerald-600 transition">Formula Library</Link>
+            <Link href="/shortcut-lab" className="hover:text-emerald-600 transition">Shortcut Lab</Link>
+            <Link href="/job" className="hover:text-emerald-600 transition">Job Mode</Link>
+            <Link href="/interview-lab" className="hover:text-emerald-600 transition">Interview Lab</Link>
+            <Link href="/exam" className="hover:text-emerald-600 transition">Exams</Link>
             <span className="text-slate-400 cursor-not-allowed">Pricing (Soon)</span>
           </nav>
 
@@ -108,11 +108,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-3">
             <Link 
               href="/dashboard" 
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition shadow ${
-                scrolled 
-                  ? 'bg-emerald-500 hover:bg-emerald-600 text-slate-950 shadow-emerald-500/10' 
-                  : 'bg-slate-900 border border-slate-800 hover:bg-slate-800 text-white'
-              }`}
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-md shadow-emerald-600/10"
             >
               Start Practicing
             </Link>
@@ -120,46 +116,46 @@ export default function LandingPage() {
               href="https://github.com" 
               target="_blank" 
               rel="noreferrer"
-              className="p-2 bg-slate-900/10 hover:bg-slate-900/20 border border-slate-700/10 rounded-xl transition hidden sm:inline-block"
+              className="px-3 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-250 rounded-xl transition hidden sm:inline-block text-xs font-semibold text-slate-700"
             >
-              <span className="text-xs font-semibold">GitHub</span>
+              GitHub
             </a>
           </div>
         </div>
       </header>
 
       {/* 2. Hero Section */}
-      <section className="pt-32 pb-20 relative overflow-hidden bg-slate-950">
+      <section className="pt-36 pb-20 relative overflow-hidden bg-white border-b border-slate-150">
         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/5 blur-3xl rounded-full pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           
           <div className="space-y-6 text-left">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[10px] font-bold text-emerald-400 tracking-wider uppercase select-none">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-[10px] font-bold text-emerald-750 tracking-wider uppercase select-none">
               <Sparkles className="w-3.5 h-3.5" />
               SaaS Learning Platform
             </div>
             
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight text-white">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight text-slate-900">
               Master Microsoft Excel <br />
-              <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 bg-clip-text text-transparent">
                 Through Real Practice
               </span>
             </h1>
 
-            <p className="text-slate-400 text-sm md:text-base leading-relaxed max-w-xl">
+            <p className="text-slate-550 text-sm md:text-base leading-relaxed max-w-xl">
               Learn Excel by solving real spreadsheet challenges, mastering formulas, practicing keyboard shortcuts, completing real office tasks, and preparing for interviews.
             </p>
 
             <div className="flex flex-wrap gap-3 pt-2">
               <Link 
                 href="/dashboard"
-                className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/10 transition active:scale-95"
+                className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-600/10 transition active:scale-95"
               >
                 Start Learning
               </Link>
               <Link 
                 href="/practice"
-                className="px-6 py-3 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 rounded-xl text-sm font-bold transition active:scale-95"
+                className="px-6 py-3 bg-slate-100 border border-slate-250 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-bold transition active:scale-95"
               >
                 Practice Now
               </Link>
@@ -168,25 +164,25 @@ export default function LandingPage() {
 
           {/* Right Side Mockup Illustration */}
           <div className="relative flex justify-center lg:justify-end">
-            <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-2xl relative overflow-hidden transition hover:scale-[1.02] duration-300">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
+            <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-4 shadow-xl relative overflow-hidden transition hover:scale-[1.02] duration-300">
+              <div className="flex items-center justify-between border-b border-slate-150 pb-3 mb-3">
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/40" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/40" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-green-500/40" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/20 border border-red-500/30" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20 border border-yellow-500/30" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-500/20 border border-green-500/30" />
                 </div>
-                <span className="text-[10px] text-slate-500 font-mono">path_excel_grid.xlsx</span>
+                <span className="text-[10px] text-slate-400 font-mono">path_excel_grid.xlsx</span>
               </div>
 
               {/* Grid Mockup */}
-              <div className="bg-slate-950 border border-slate-850 rounded-xl p-3 font-mono text-[10px] space-y-2">
-                <div className="flex gap-1.5 items-center p-1 bg-slate-900 rounded border border-slate-800">
-                  <span className="text-emerald-500 font-bold px-1.5 bg-slate-950 rounded">A1</span>
-                  <span className="text-slate-500 font-serif italic">fx</span>
-                  <span className="text-emerald-450 font-bold font-mono text-[9px]">=VLOOKUP(D2, A1:B10, 2, FALSE)</span>
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 font-mono text-[10px] space-y-2">
+                <div className="flex gap-1.5 items-center p-1.5 bg-white rounded border border-slate-200">
+                  <span className="text-emerald-600 font-bold px-1.5 bg-slate-100 rounded">A1</span>
+                  <span className="text-slate-400 font-serif italic">fx</span>
+                  <span className="text-emerald-700 font-bold font-mono text-[9px]">=VLOOKUP(D2, A1:B10, 2, FALSE)</span>
                 </div>
 
-                <div className="grid grid-cols-4 gap-1.5 text-center text-slate-400 font-semibold border-b border-slate-800 pb-1.5 select-none">
+                <div className="grid grid-cols-4 gap-1.5 text-center text-slate-500 font-bold border-b border-slate-200 pb-1.5 select-none">
                   <span>ID</span>
                   <span>Product</span>
                   <span>Price</span>
@@ -197,19 +193,19 @@ export default function LandingPage() {
                   ['102', 'Tax Invoice', '$340', 'Pending'],
                   ['103', 'Inventory', '$7,900', 'Active']
                 ].map((row, idx) => (
-                  <div key={idx} className="grid grid-cols-4 gap-1.5 text-center text-slate-350 py-1 border-b border-slate-900 last:border-0 hover:bg-slate-900/40 rounded transition">
+                  <div key={idx} className="grid grid-cols-4 gap-1.5 text-center text-slate-700 py-1.5 border-b border-slate-150 last:border-0 hover:bg-slate-100 rounded transition">
                     <span>{row[0]}</span>
-                    <span className="text-left pl-2 text-slate-200">{row[1]}</span>
+                    <span className="text-left pl-2 text-slate-800 font-medium">{row[1]}</span>
                     <span>{row[2]}</span>
-                    <span className="text-emerald-455 font-bold">{row[3]}</span>
+                    <span className="text-emerald-650 font-bold">{row[3]}</span>
                   </div>
                 ))}
               </div>
 
               {/* Floating Formula Card */}
-              <div className="absolute bottom-6 left-6 bg-slate-900/90 border border-emerald-500/30 p-3 rounded-xl shadow-xl flex items-center gap-2 animate-bounce">
-                <Award className="w-4 h-4 text-emerald-400" />
-                <span className="text-[10px] text-slate-100 font-bold">Formula Evaluated Success!</span>
+              <div className="absolute bottom-6 left-6 bg-white border border-emerald-500/30 p-3 rounded-xl shadow-lg flex items-center gap-2 animate-bounce">
+                <Award className="w-4 h-4 text-emerald-600" />
+                <span className="text-[10px] text-slate-800 font-bold">Formula Evaluated Success!</span>
               </div>
             </div>
           </div>
@@ -218,7 +214,7 @@ export default function LandingPage() {
       </section>
 
       {/* 3. Section 2: Trust Bar */}
-      <section className="bg-slate-950/40 border-y border-slate-900 py-8 select-none">
+      <section className="bg-slate-100 border-b border-slate-200 py-8 select-none">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 flex flex-wrap justify-center gap-4 text-center">
           {[
             '10,000+ Practice Questions',
@@ -228,7 +224,7 @@ export default function LandingPage() {
             'Beginner Friendly',
             'No Signup Required for Demo'
           ].map(stat => (
-            <span key={stat} className="px-3.5 py-1 bg-slate-900 border border-slate-850 text-slate-300 rounded-full text-xs font-semibold">
+            <span key={stat} className="px-3.5 py-1 bg-white border border-slate-200 text-slate-700 rounded-full text-xs font-semibold shadow-sm">
               {stat}
             </span>
           ))}
@@ -236,13 +232,13 @@ export default function LandingPage() {
       </section>
 
       {/* 4. Section 3: Try Without Signup Sandbox */}
-      <section className="py-20 bg-slate-950 relative">
+      <section className="py-20 bg-slate-50 relative">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 space-y-12">
           <div className="text-center max-w-2xl mx-auto space-y-2">
-            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
+            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
               Try Path Excel in 30 Seconds
             </h2>
-            <p className="text-slate-400 text-xs md:text-sm">
+            <p className="text-slate-550 text-xs md:text-sm">
               No signup required. Experience real Excel practice instantly.
             </p>
           </div>
@@ -251,34 +247,34 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             {/* Left Question details card (col-span-5) */}
-            <div className="lg:col-span-5 bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+            <div className="lg:col-span-5 bg-white border border-slate-200 p-5 rounded-2xl shadow-md space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-150 pb-3">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                   Assessment Demo
                 </span>
-                <span className="px-2 py-0.5 text-[9px] font-bold bg-emerald-950/20 text-emerald-450 rounded border border-emerald-900/50">
+                <span className="px-2 py-0.5 text-[9px] font-bold bg-emerald-50 text-emerald-700 rounded border border-emerald-200">
                   Beginner • 30s
                 </span>
               </div>
 
-              <div className="space-y-2 text-xs">
-                <p><strong className="text-slate-200">Scenario:</strong> A shop owner wants today's total sales calculated.</p>
-                <div className="bg-slate-950 border border-slate-850 p-3 rounded-xl">
-                  <strong className="text-emerald-400 block mb-0.5">Task:</strong>
+              <div className="space-y-2 text-xs leading-relaxed text-slate-650">
+                <p><strong className="text-slate-800">Scenario:</strong> A shop owner wants today's total sales calculated.</p>
+                <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-800">
+                  <strong className="text-emerald-700 block mb-0.5">Task:</strong>
                   Calculate the Total Sales using the SUM formula inside cell B6.
                 </div>
               </div>
 
               <button
                 onClick={() => setDemoHint(prev => !prev)}
-                className="text-[11px] font-semibold text-amber-400 hover:text-amber-300 flex items-center gap-1"
+                className="text-[11px] font-semibold text-amber-600 hover:text-amber-700 flex items-center gap-1"
               >
                 <Lightbulb className="w-3.5 h-3.5" />
                 {demoHint ? 'Hide Hint' : 'Show Hint'}
               </button>
 
               {demoHint && (
-                <div className="p-3 bg-slate-950 border border-slate-850 rounded-xl text-[10px] text-slate-400">
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[10px] text-slate-500">
                   Use the SUM function to add all sales values: `=SUM(B2:B5)`.
                 </div>
               )}
@@ -286,32 +282,32 @@ export default function LandingPage() {
 
             {/* Right Mini Spreadsheet (col-span-7) */}
             <div className="lg:col-span-7 space-y-4">
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
-                <div className="flex items-center gap-2 p-1.5 bg-slate-950 border border-slate-850 rounded-xl text-xs font-mono">
-                  <div className="w-10 text-center font-bold text-emerald-500 bg-slate-900 py-1 rounded">B6</div>
-                  <span className="text-slate-500 font-serif italic select-none">fx</span>
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-md space-y-3">
+                <div className="flex items-center gap-2 p-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono">
+                  <div className="w-10 text-center font-bold text-emerald-600 bg-white border border-slate-200 py-1 rounded">B6</div>
+                  <span className="text-slate-400 font-serif italic select-none">fx</span>
                   <input
                     type="text"
                     value={demoInput}
                     onChange={(e) => setDemoInput(e.target.value)}
                     placeholder="Enter formula (e.g. =SUM(B2:B5))"
-                    className="flex-1 bg-transparent text-emerald-400 font-bold focus:outline-none placeholder-slate-700"
+                    className="flex-1 bg-transparent text-emerald-700 font-bold focus:outline-none placeholder-slate-450"
                   />
                 </div>
 
                 {/* Grid */}
-                <div className="overflow-x-auto border border-slate-800 rounded-xl bg-slate-950 font-mono text-xs">
+                <div className="overflow-x-auto border border-slate-200 rounded-xl bg-slate-50 font-mono text-xs">
                   <table className="w-full border-collapse">
                     <thead>
-                      <tr className="bg-slate-900/60 border-b border-slate-800 text-slate-400 font-semibold">
-                        <th className="p-2 border-r border-slate-800 w-10" />
-                        <th className="p-2 border-r border-slate-800 text-center">A</th>
-                        <th className="p-2 border-r border-slate-800 text-center">B</th>
+                      <tr className="bg-slate-100 border-b border-slate-250 text-slate-500 font-bold">
+                        <th className="p-2 border-r border-slate-200 w-10" />
+                        <th className="p-2 border-r border-slate-200 text-center">A</th>
+                        <th className="p-2 border-r border-slate-200 text-center">B</th>
                       </tr>
-                      <tr className="bg-slate-900/40 border-b border-slate-800 text-slate-350">
-                        <th className="p-2 border-r border-slate-800 select-none text-slate-500 w-10 text-center font-bold">1</th>
-                        <th className="p-2 border-r border-slate-800 text-center">Item</th>
-                        <th className="p-2 border-r border-slate-800 text-center">Sales</th>
+                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-650">
+                        <th className="p-2 border-r border-slate-200 select-none text-slate-450 w-10 text-center font-bold">1</th>
+                        <th className="p-2 border-r border-slate-200 text-center">Item</th>
+                        <th className="p-2 border-r border-slate-200 text-center">Sales</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -325,17 +321,17 @@ export default function LandingPage() {
                         const rowNum = idx + 2;
                         const isTarget = rowNum === 6;
                         return (
-                          <tr key={idx} className="border-b border-slate-850">
-                            <td className="p-2 border-r border-slate-800 text-slate-500 text-center font-bold select-none">{rowNum}</td>
-                            <td className="p-2 border-r border-slate-850 text-center text-slate-300">{row[0]}</td>
-                            <td className={`p-2 border-r border-slate-850 text-center text-slate-300 ${isTarget ? 'bg-slate-900 font-bold text-emerald-400 ring-2 ring-emerald-500 ring-inset' : ''}`}>
+                          <tr key={idx} className="border-b border-slate-200 bg-white">
+                            <td className="p-2 border-r border-slate-200 text-slate-400 text-center font-bold select-none">{rowNum}</td>
+                            <td className="p-2 border-r border-slate-150 text-center text-slate-700">{row[0]}</td>
+                            <td className={`p-2 border-r border-slate-150 text-center text-slate-700 ${isTarget ? 'bg-slate-50 font-bold text-emerald-600 ring-2 ring-emerald-500 ring-inset' : ''}`}>
                               {isTarget ? (
                                 <input
                                   type="text"
                                   value={demoInput}
                                   onChange={(e) => setDemoInput(e.target.value)}
                                   placeholder="Enter formula"
-                                  className="w-full text-center bg-transparent text-emerald-400 font-bold focus:outline-none placeholder-slate-700"
+                                  className="w-full text-center bg-transparent text-emerald-600 font-bold focus:outline-none placeholder-slate-450"
                                 />
                               ) : (
                                 row[1]
@@ -352,13 +348,13 @@ export default function LandingPage() {
                 <div className="flex gap-2 justify-end">
                   <button
                     onClick={() => { setDemoInput(''); setDemoFeedback(null); }}
-                    className="px-4 py-2 bg-slate-850 hover:bg-slate-800 text-slate-300 border border-slate-700 rounded-xl text-xs font-semibold transition"
+                    className="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-650 border border-slate-200 rounded-xl text-xs font-semibold transition"
                   >
                     Reset
                   </button>
                   <button
                     onClick={handleCheckDemo}
-                    className="px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-xs transition"
+                    className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition"
                   >
                     Check Answer
                   </button>
@@ -368,19 +364,19 @@ export default function LandingPage() {
                 {demoFeedback && (
                   <div className={`p-4 border rounded-xl flex items-start gap-3 text-xs mt-3 ${
                     demoFeedback.isCorrect 
-                      ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-355' 
-                      : 'bg-rose-950/20 border-rose-500/30 text-rose-350'
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
+                      : 'bg-rose-50 border-rose-250 text-rose-800'
                   }`}>
                     {demoFeedback.isCorrect ? (
-                      <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                     ) : (
-                      <AlertTriangle className="w-4 h-4 text-rose-455 shrink-0 mt-0.5" />
+                      <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                     )}
                     <div className="space-y-1 text-left">
                       <h4 className="font-bold">
                         {demoFeedback.isCorrect ? '✅ Correct! Excellent.' : '❌ Incorrect'}
                       </h4>
-                      <p className="text-slate-400 leading-normal font-sans">
+                      <p className="text-slate-650 leading-normal font-sans">
                         {demoFeedback.isCorrect 
                           ? 'You solved your first Excel problem successfully. Proceed below to practice more!'
                           : 'Try again! Check if you typed `=SUM(B2:B5)` correctly.'
@@ -388,10 +384,10 @@ export default function LandingPage() {
                       </p>
                       {demoFeedback.isCorrect && (
                         <div className="flex gap-2 pt-2">
-                          <Link href="/dashboard" className="px-3 py-1 bg-emerald-500 text-slate-950 font-bold rounded text-[10px] transition">
+                          <Link href="/dashboard" className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[10px] transition">
                             Continue Learning
                           </Link>
-                          <Link href="/practice" className="px-3 py-1 bg-slate-950 border border-slate-850 text-slate-300 rounded text-[10px] transition">
+                          <Link href="/practice" className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-250 text-slate-700 rounded text-[10px] transition">
                             Practice More
                           </Link>
                         </div>
@@ -408,13 +404,13 @@ export default function LandingPage() {
       </section>
 
       {/* 5. Section 4: Features Grid */}
-      <section className="py-20 bg-slate-950/40 border-y border-slate-900">
+      <section className="py-20 bg-white border-y border-slate-200">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 space-y-12">
           <div className="text-center max-w-2xl mx-auto space-y-2">
-            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
+            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
               Everything You Need to Master Excel
             </h2>
-            <p className="text-slate-400 text-xs md:text-sm">
+            <p className="text-slate-550 text-xs md:text-sm">
               Six premium interactive environments engineered for absolute job readiness.
             </p>
           </div>
@@ -433,16 +429,16 @@ export default function LandingPage() {
                 <Link
                   key={idx}
                   href={f.href}
-                  className="bg-slate-900 border border-slate-800 hover:border-slate-700 p-6 rounded-2xl flex flex-col justify-between gap-6 hover:shadow-xl transition"
+                  className="bg-slate-50 border border-slate-200 hover:border-slate-350 p-6 rounded-2xl flex flex-col justify-between gap-6 hover:shadow-md transition"
                 >
                   <div className="space-y-3">
-                    <div className="p-3 bg-emerald-500/10 text-emerald-450 border border-emerald-500/20 rounded-xl w-fit">
+                    <div className="p-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl w-fit">
                       <Icon className="w-5 h-5" />
                     </div>
-                    <h3 className="text-base font-bold text-slate-100">{f.title}</h3>
-                    <p className="text-xs text-slate-400 leading-normal font-sans">{f.desc}</p>
+                    <h3 className="text-base font-bold text-slate-900">{f.title}</h3>
+                    <p className="text-xs text-slate-500 leading-normal font-sans">{f.desc}</p>
                   </div>
-                  <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-455">
+                  <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-700">
                     Start Environment
                     <ArrowUpRight className="w-3.5 h-3.5" />
                   </span>
@@ -454,13 +450,13 @@ export default function LandingPage() {
       </section>
 
       {/* 6. Section 5: How Path Excel Works (Timeline) */}
-      <section className="py-20 bg-slate-950">
+      <section className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 space-y-12">
           <div className="text-center max-w-2xl mx-auto space-y-2">
-            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
+            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
               How Path Excel Works
             </h2>
-            <p className="text-slate-400 text-xs md:text-sm">
+            <p className="text-slate-550 text-xs md:text-sm">
               Your step-by-step roadmap to job readiness.
             </p>
           </div>
@@ -476,12 +472,12 @@ export default function LandingPage() {
             ].map((s, idx) => (
               <div 
                 key={idx} 
-                className="bg-slate-900 border border-slate-800/80 p-5 rounded-2xl space-y-3 shadow-md hover:scale-105 transition duration-300"
+                className="bg-white border border-slate-200 p-5 rounded-2xl space-y-3 shadow-sm hover:scale-105 transition duration-300"
               >
-                <span className="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-450 border border-emerald-500/20 text-xs font-bold font-mono inline-flex items-center justify-center">
+                <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold font-mono inline-flex items-center justify-center">
                   {s.step}
                 </span>
-                <h4 className="text-xs font-bold text-slate-100">{s.title}</h4>
+                <h4 className="text-xs font-bold text-slate-900">{s.title}</h4>
                 <p className="text-[10px] text-slate-500 leading-normal font-sans">{s.desc}</p>
               </div>
             ))}
@@ -490,25 +486,25 @@ export default function LandingPage() {
       </section>
 
       {/* 7. Section 6: Large Live Spreadsheet Preview */}
-      <section className="py-20 bg-slate-950/40 border-y border-slate-900">
+      <section className="py-20 bg-white border-y border-slate-200">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 space-y-12">
           <div className="text-center max-w-2xl mx-auto space-y-2">
-            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
+            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
               Live Spreadsheet Simulator
             </h2>
-            <p className="text-slate-400 text-xs md:text-sm">
+            <p className="text-slate-550 text-xs md:text-sm">
               Interact, edit, and test formulas inside our live playground.
             </p>
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <span className="text-xs font-bold text-slate-450 uppercase tracking-widest font-mono">
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 shadow-lg space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <span className="text-xs font-bold text-slate-650 uppercase tracking-widest font-mono">
                 Formula Bar Task: Calculate Total Sales
               </span>
               <button
                 onClick={() => setSec6Hint(prev => !prev)}
-                className="text-[10px] text-slate-400 hover:text-white flex items-center gap-1"
+                className="text-[10px] text-slate-500 hover:text-slate-800 flex items-center gap-1"
               >
                 <Lightbulb className="w-3.5 h-3.5" />
                 {sec6Hint ? 'Hide Hint' : 'Show Hint'}
@@ -516,31 +512,31 @@ export default function LandingPage() {
             </div>
 
             {/* Input Bar */}
-            <div className="flex items-center gap-2 p-1.5 bg-slate-950 border border-slate-850 rounded-xl text-xs font-mono">
-              <div className="w-10 text-center font-bold text-emerald-500 bg-slate-900 py-1 rounded">B6</div>
-              <span className="text-slate-500 font-serif italic select-none">fx</span>
+            <div className="flex items-center gap-2 p-1.5 bg-white border border-slate-200 rounded-xl text-xs font-mono">
+              <div className="w-10 text-center font-bold text-emerald-600 bg-slate-100 py-1 rounded">B6</div>
+              <span className="text-slate-400 font-serif italic select-none">fx</span>
               <input
                 type="text"
                 value={sec6Input}
                 onChange={(e) => setSec6Input(e.target.value)}
                 placeholder="Enter cell formula (e.g. =SUM(B2:B5))"
-                className="flex-1 bg-transparent text-emerald-400 font-bold focus:outline-none placeholder-slate-700"
+                className="flex-1 bg-transparent text-emerald-600 font-bold focus:outline-none placeholder-slate-450"
               />
             </div>
 
             {/* Grid */}
-            <div className="overflow-x-auto border border-slate-800 rounded-xl bg-slate-950 font-mono text-xs">
+            <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white font-mono text-xs">
               <table className="w-full border-collapse">
                 <thead>
-                  <tr className="bg-slate-900/60 border-b border-slate-800 text-slate-400 font-semibold">
-                    <th className="p-2 border-r border-slate-800 w-10" />
-                    <th className="p-2 border-r border-slate-800 text-center">A</th>
-                    <th className="p-2 border-r border-slate-800 text-center">B</th>
+                  <tr className="bg-slate-100 border-b border-slate-200 text-slate-500 font-bold">
+                    <th className="p-2 border-r border-slate-200 w-10" />
+                    <th className="p-2 border-r border-slate-200 text-center">A</th>
+                    <th className="p-2 border-r border-slate-200 text-center">B</th>
                   </tr>
-                  <tr className="bg-slate-900/40 border-b border-slate-800 text-slate-350">
-                    <th className="p-2 border-r border-slate-800 select-none text-slate-500 w-10 text-center font-bold">1</th>
-                    <th className="p-2 border-r border-slate-800 text-center">Item</th>
-                    <th className="p-2 border-r border-slate-800 text-center">Sales</th>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-650">
+                    <th className="p-2 border-r border-slate-200 select-none text-slate-455 w-10 text-center font-bold">1</th>
+                    <th className="p-2 border-r border-slate-200 text-center">Item</th>
+                    <th className="p-2 border-r border-slate-200 text-center">Sales</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -554,17 +550,17 @@ export default function LandingPage() {
                     const rowNum = idx + 2;
                     const isTarget = rowNum === 6;
                     return (
-                      <tr key={idx} className="border-b border-slate-850">
-                        <td className="p-2 border-r border-slate-800 text-slate-500 text-center font-bold select-none">{rowNum}</td>
-                        <td className="p-2 border-r border-slate-850 text-center text-slate-300">{row[0]}</td>
-                        <td className={`p-2 border-r border-slate-850 text-center text-slate-300 ${isTarget ? 'bg-slate-900 font-bold text-emerald-400 ring-2 ring-emerald-500 ring-inset' : ''}`}>
+                      <tr key={idx} className="border-b border-slate-200 bg-white">
+                        <td className="p-2 border-r border-slate-200 text-slate-450 text-center font-bold select-none">{rowNum}</td>
+                        <td className="p-2 border-r border-slate-150 text-center text-slate-700">{row[0]}</td>
+                        <td className={`p-2 border-r border-slate-150 text-center text-slate-700 ${isTarget ? 'bg-slate-50 font-bold text-emerald-600 ring-2 ring-emerald-500 ring-inset' : ''}`}>
                           {isTarget ? (
                             <input
                               type="text"
                               value={sec6Input}
                               onChange={(e) => setSec6Input(e.target.value)}
                               placeholder="Enter formula"
-                              className="w-full text-center bg-transparent text-emerald-400 font-bold focus:outline-none placeholder-slate-700"
+                              className="w-full text-center bg-transparent text-emerald-600 font-bold focus:outline-none placeholder-slate-450"
                             />
                           ) : (
                             row[1]
@@ -577,9 +573,8 @@ export default function LandingPage() {
               </table>
             </div>
 
-            {/* Hint output */}
             {sec6Hint && (
-              <div className="p-3 bg-slate-950 border border-slate-850 rounded-xl text-xs text-slate-400">
+              <div className="p-3 bg-white border border-slate-200 rounded-xl text-xs text-slate-500 font-sans">
                 Formula target: `=SUM(B2:B5)`.
               </div>
             )}
@@ -588,13 +583,13 @@ export default function LandingPage() {
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => { setSec6Input(''); setSec6Feedback(null); }}
-                className="px-4 py-2 bg-slate-850 hover:bg-slate-800 text-slate-300 border border-slate-700 rounded-xl text-xs font-semibold transition"
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-650 border border-slate-200 rounded-xl text-xs font-semibold transition"
               >
                 Reset Grid
               </button>
               <button
                 onClick={handleCheckSec6}
-                className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-xs transition"
+                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition"
               >
                 Check Answer
               </button>
@@ -603,19 +598,19 @@ export default function LandingPage() {
             {sec6Feedback && (
               <div className={`p-4 border rounded-xl flex items-start gap-3 text-xs ${
                 sec6Feedback.isCorrect 
-                  ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-355' 
-                  : 'bg-rose-950/20 border-rose-500/30 text-rose-350'
+                  ? 'bg-emerald-55 border-emerald-200 text-emerald-800' 
+                  : 'bg-rose-50 border-rose-200 text-rose-800'
               }`}>
                 {sec6Feedback.isCorrect ? (
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                 ) : (
-                  <AlertTriangle className="w-4 h-4 text-rose-455 shrink-0 mt-0.5" />
+                  <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                 )}
                 <div className="space-y-1">
                   <h4 className="font-bold">
                     {sec6Feedback.isCorrect ? '✅ Success!' : '❌ Incorrect'}
                   </h4>
-                  <p className="text-slate-400 leading-normal font-sans">
+                  <p className="text-slate-600 leading-normal font-sans">
                     {sec6Feedback.isCorrect 
                       ? 'The formula calculated correctly.'
                       : 'Please type `=SUM(B2:B5)` to evaluate total Sales.'
@@ -629,13 +624,13 @@ export default function LandingPage() {
       </section>
 
       {/* 8. Section 7: Learning Roadmap Modules */}
-      <section className="py-20 bg-slate-950">
+      <section className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 space-y-12">
           <div className="text-center max-w-2xl mx-auto space-y-2">
-            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
+            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
               Learning Roadmap
             </h2>
-            <p className="text-slate-400 text-xs md:text-sm">
+            <p className="text-slate-550 text-xs md:text-sm">
               Full curriculum mapping essential corporate operations.
             </p>
           </div>
@@ -648,15 +643,15 @@ export default function LandingPage() {
             ].map((module, idx) => (
               <div 
                 key={idx}
-                className="bg-slate-900 border border-slate-800 p-4 rounded-xl flex items-center justify-between gap-4"
+                className="bg-white border border-slate-200 p-4 rounded-xl flex items-center justify-between gap-4 shadow-sm"
               >
                 <div>
-                  <h4 className="text-xs font-bold text-slate-100">{module}</h4>
+                  <h4 className="text-xs font-bold text-slate-800">{module}</h4>
                   <span className="text-[10px] text-slate-500 font-mono">10 Lessons • Not Started</span>
                 </div>
                 <Link
                   href="/learn"
-                  className="px-3 py-1.5 bg-slate-950 hover:bg-slate-850 border border-slate-800 text-[10px] font-bold text-emerald-450 rounded-lg transition"
+                  className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-[10px] font-bold text-emerald-700 rounded-lg transition"
                 >
                   Start
                 </Link>
@@ -667,13 +662,13 @@ export default function LandingPage() {
       </section>
 
       {/* 9. Section 8: Job Ready Excel Projects */}
-      <section className="py-20 bg-slate-950/40 border-y border-slate-900">
+      <section className="py-20 bg-white border-y border-slate-200">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 space-y-12">
           <div className="text-center max-w-2xl mx-auto space-y-2">
-            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
+            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
               Real Excel Projects
             </h2>
-            <p className="text-slate-400 text-xs md:text-sm">
+            <p className="text-slate-550 text-xs md:text-sm">
               Build standard financial spreadsheets required by hiring companies.
             </p>
           </div>
@@ -686,12 +681,12 @@ export default function LandingPage() {
             ].map((p, idx) => (
               <div 
                 key={idx}
-                className="bg-slate-900 border border-slate-800/80 p-4 rounded-2xl text-center space-y-2 shadow-sm"
+                className="bg-slate-50 border border-slate-200 p-4 rounded-2xl text-center space-y-2 shadow-sm"
               >
-                <div className="w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto text-xs font-bold">
+                <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto text-xs font-bold border border-emerald-100">
                   {idx + 1}
                 </div>
-                <h4 className="text-[10px] font-bold text-slate-200">{p}</h4>
+                <h4 className="text-[10px] font-bold text-slate-700">{p}</h4>
               </div>
             ))}
           </div>
@@ -699,27 +694,27 @@ export default function LandingPage() {
       </section>
 
       {/* 10. Section 9: Why Path Excel (Comparison Table) */}
-      <section className="py-20 bg-slate-950">
+      <section className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 space-y-12">
           <div className="text-center max-w-2xl mx-auto space-y-2">
-            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
+            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
               Why Path Excel?
             </h2>
-            <p className="text-slate-400 text-xs md:text-sm">
+            <p className="text-slate-550 text-xs md:text-sm">
               The world's most practical platform to learn spreadsheet formulas.
             </p>
           </div>
 
-          <div className="overflow-x-auto border border-slate-800 rounded-2xl bg-slate-900 max-w-2xl mx-auto shadow-lg">
+          <div className="overflow-x-auto border border-slate-200 rounded-2xl bg-white max-w-2xl mx-auto shadow-sm">
             <table className="w-full border-collapse text-left text-xs">
               <thead>
-                <tr className="bg-slate-950 border-b border-slate-800 font-bold text-slate-200">
+                <tr className="bg-slate-50 border-b border-slate-200 font-bold text-slate-700">
                   <th className="p-4">Features</th>
-                  <th className="p-4 text-emerald-450">Path Excel</th>
-                  <th className="p-4 text-slate-500">Video Courses</th>
+                  <th className="p-4 text-emerald-700">Path Excel</th>
+                  <th className="p-4 text-slate-450">Video Courses</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-850 font-medium">
+              <tbody className="divide-y divide-slate-150 font-medium">
                 {[
                   ['Interactive Spreadsheet', true, false],
                   ['Formula Practice', true, false],
@@ -728,12 +723,12 @@ export default function LandingPage() {
                   ['Interview Practice', true, false],
                   ['Progress Tracking', true, false]
                 ].map((row, idx) => (
-                  <tr key={idx} className="hover:bg-slate-900/30">
-                    <td className="p-4 text-slate-350">{row[0]}</td>
-                    <td className="p-4 text-emerald-400">
+                  <tr key={idx} className="hover:bg-slate-50">
+                    <td className="p-4 text-slate-600">{row[0]}</td>
+                    <td className="p-4 text-emerald-600 font-bold">
                       {row[1] ? '✔ Interactive Grid' : '✘ Passive'}
                     </td>
-                    <td className="p-4 text-slate-600">
+                    <td className="p-4 text-slate-400 font-bold">
                       {row[2] ? '✔ Yes' : '✘ Passive Lectures'}
                     </td>
                   </tr>
@@ -745,7 +740,7 @@ export default function LandingPage() {
       </section>
 
       {/* 11. Section 10: Statistics counters */}
-      <section className="py-16 bg-slate-950/40 border-y border-slate-900 select-none">
+      <section className="py-16 bg-slate-100 border-y border-slate-200 select-none">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-5 gap-6 text-center">
           {[
             { c: '500+', t: 'Lessons' },
@@ -755,10 +750,10 @@ export default function LandingPage() {
             { c: '100+', t: 'Mock Interviews' }
           ].map((stat, idx) => (
             <div key={idx} className="space-y-1">
-              <span className="text-3xl font-extrabold text-emerald-450 font-mono block">
+              <span className="text-3xl font-extrabold text-emerald-650 font-mono block">
                 {stat.c}
               </span>
-              <span className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold block">
+              <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold block">
                 {stat.t}
               </span>
             </div>
@@ -767,13 +762,13 @@ export default function LandingPage() {
       </section>
 
       {/* 12. Section 11: Testimonials */}
-      <section className="py-20 bg-slate-950">
+      <section className="py-20 bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 space-y-12">
           <div className="text-center max-w-2xl mx-auto space-y-2">
-            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
+            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
               Student Success Stories
             </h2>
-            <p className="text-slate-400 text-xs md:text-sm">
+            <p className="text-slate-550 text-xs md:text-sm">
               Real outcomes from our self-paced learning framework.
             </p>
           </div>
@@ -786,17 +781,17 @@ export default function LandingPage() {
             ].map((t, idx) => (
               <div 
                 key={idx}
-                className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-md space-y-4 hover:shadow-lg transition duration-200"
+                className="bg-slate-50 border border-slate-200 p-6 rounded-2xl shadow-sm space-y-4 hover:shadow-md transition duration-200"
               >
-                <div className="flex items-center gap-1 text-amber-400">
-                  {[...Array(5)].map((_, i) => <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />)}
+                <div className="flex items-center gap-1 text-amber-500">
+                  {[...Array(5)].map((_, i) => <Star key={i} className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />)}
                 </div>
-                <p className="text-xs text-slate-400 italic leading-relaxed font-sans">
+                <p className="text-xs text-slate-650 italic leading-relaxed font-sans">
                   "{t.quote}"
                 </p>
-                <div className="border-t border-slate-800/80 pt-3">
-                  <h4 className="text-xs font-bold text-slate-200">{t.name}</h4>
-                  <span className="text-[10px] text-slate-500">{t.role}</span>
+                <div className="border-t border-slate-200 pt-3">
+                  <h4 className="text-xs font-bold text-slate-800">{t.name}</h4>
+                  <span className="text-[10px] text-slate-500 font-medium">{t.role}</span>
                 </div>
               </div>
             ))}
@@ -805,28 +800,28 @@ export default function LandingPage() {
       </section>
 
       {/* 13. Section 12: FAQ Accordion */}
-      <section className="py-20 bg-slate-950/40 border-y border-slate-900">
+      <section className="py-20 bg-slate-50">
         <div className="max-w-3xl mx-auto px-4 md:px-6 space-y-10">
           <div className="text-center space-y-2">
-            <h2 className="text-2xl font-extrabold text-white">Frequently Asked Questions</h2>
-            <p className="text-slate-450 text-xs">Everything you need to know about the platform.</p>
+            <h2 className="text-2xl font-extrabold text-slate-900">Frequently Asked Questions</h2>
+            <p className="text-slate-500 text-xs">Everything you need to know about the platform.</p>
           </div>
 
           <div className="space-y-3">
             {faqData.map((faq, idx) => (
               <div 
                 key={idx}
-                className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm"
+                className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm"
               >
                 <button
                   onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
-                  className="w-full px-5 py-4 text-left text-xs font-semibold text-slate-200 hover:text-white flex justify-between items-center transition"
+                  className="w-full px-5 py-4 text-left text-xs font-semibold text-slate-700 hover:text-slate-900 flex justify-between items-center transition"
                 >
                   <span>{faq.q}</span>
-                  <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${activeFaq === idx ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${activeFaq === idx ? 'rotate-180' : ''}`} />
                 </button>
                 {activeFaq === idx && (
-                  <div className="px-5 pb-4 text-xs text-slate-400 leading-relaxed font-sans border-t border-slate-850 pt-2">
+                  <div className="px-5 pb-4 text-xs text-slate-500 leading-relaxed font-sans border-t border-slate-100 pt-2">
                     {faq.a}
                   </div>
                 )}
@@ -837,10 +832,10 @@ export default function LandingPage() {
       </section>
 
       {/* 14. Section 13: Final CTA */}
-      <section className="py-24 bg-slate-950 text-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-emerald-500/5 blur-3xl rounded-full pointer-events-none" />
+      <section className="py-24 bg-white text-center relative overflow-hidden border-t border-slate-150">
+        <div className="absolute inset-0 bg-emerald-55 blur-3xl rounded-full pointer-events-none" />
         <div className="max-w-xl mx-auto px-4 space-y-6">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight">
             Practice Excel. <br />
             Build Real Skills. <br />
             Get Job Ready.
@@ -848,13 +843,13 @@ export default function LandingPage() {
           <div className="flex justify-center gap-3 pt-2">
             <Link 
               href="/dashboard"
-              className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl text-sm font-bold shadow-lg transition active:scale-95"
+              className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold shadow-lg transition active:scale-95"
             >
               Start Learning
             </Link>
             <Link 
               href="/practice"
-              className="px-6 py-3 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 rounded-xl text-sm font-bold transition active:scale-95"
+              className="px-6 py-3 bg-slate-100 border border-slate-250 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-bold transition active:scale-95"
             >
               Practice Excel
             </Link>
@@ -863,51 +858,51 @@ export default function LandingPage() {
       </section>
 
       {/* 15. Footer */}
-      <footer className="bg-slate-950 border-t border-slate-900 py-12 text-slate-500 text-xs">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-5 gap-8 border-b border-slate-900 pb-10">
+      <footer className="bg-slate-50 border-t border-slate-200 py-12 text-slate-500 text-xs">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-5 gap-8 border-b border-slate-200 pb-10">
           <div className="col-span-2 space-y-4">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md bg-emerald-500 flex items-center justify-center shadow">
-                <span className="font-mono font-bold text-slate-950 text-sm">P</span>
+              <div className="w-6 h-6 rounded-md bg-emerald-600 flex items-center justify-center shadow-sm">
+                <span className="font-mono font-bold text-white text-sm">P</span>
               </div>
-              <span className="font-bold text-slate-200">Path Excel</span>
+              <span className="font-bold text-slate-800">Path Excel</span>
             </div>
-            <p className="max-w-xs leading-relaxed font-sans">
+            <p className="max-w-xs leading-relaxed font-sans text-slate-500">
               The world's most practical online spreadsheet training platform. Master formulas, formatting, shortcut logs, and hiring assessments.
             </p>
           </div>
 
           <div className="space-y-3">
-            <h4 className="font-bold text-slate-300 uppercase tracking-wider text-[10px]">Quick Links</h4>
+            <h4 className="font-bold text-slate-700 uppercase tracking-wider text-[10px]">Quick Links</h4>
             <ul className="space-y-2 font-sans">
-              <li><Link href="/learn" className="hover:text-slate-350 transition">Lessons</Link></li>
-              <li><Link href="/practice" className="hover:text-slate-350 transition">Spreadsheet Practice</Link></li>
-              <li><Link href="/formula-library" className="hover:text-slate-350 transition">Formula Reference</Link></li>
-              <li><Link href="/shortcut-lab" className="hover:text-slate-350 transition">Shortcut Lab</Link></li>
+              <li><Link href="/learn" className="hover:text-slate-850 transition">Lessons</Link></li>
+              <li><Link href="/practice" className="hover:text-slate-850 transition">Spreadsheet Practice</Link></li>
+              <li><Link href="/formula-library" className="hover:text-slate-850 transition">Formula Reference</Link></li>
+              <li><Link href="/shortcut-lab" className="hover:text-slate-850 transition">Shortcut Lab</Link></li>
             </ul>
           </div>
 
           <div className="space-y-3">
-            <h4 className="font-bold text-slate-300 uppercase tracking-wider text-[10px]">Resources</h4>
+            <h4 className="font-bold text-slate-700 uppercase tracking-wider text-[10px]">Resources</h4>
             <ul className="space-y-2 font-sans">
-              <li><Link href="/job" className="hover:text-slate-350 transition">Job Mode</Link></li>
-              <li><Link href="/interview-lab" className="hover:text-slate-350 transition">Interview assessments</Link></li>
-              <li><Link href="/exam" className="hover:text-slate-350 transition">Corporate Exams</Link></li>
+              <li><Link href="/job" className="hover:text-slate-850 transition">Job Mode</Link></li>
+              <li><Link href="/interview-lab" className="hover:text-slate-850 transition">Interview assessments</Link></li>
+              <li><Link href="/exam" className="hover:text-slate-850 transition">Corporate Exams</Link></li>
             </ul>
           </div>
 
           <div className="space-y-3">
-            <h4 className="font-bold text-slate-300 uppercase tracking-wider text-[10px]">Legal</h4>
+            <h4 className="font-bold text-slate-700 uppercase tracking-wider text-[10px]">Legal</h4>
             <ul className="space-y-2 font-sans text-slate-500">
-              <li><span className="hover:text-slate-350 transition cursor-pointer">Privacy Policy</span></li>
-              <li><span className="hover:text-slate-350 transition cursor-pointer">Terms of Service</span></li>
+              <li><span className="hover:text-slate-850 transition cursor-pointer">Privacy Policy</span></li>
+              <li><span className="hover:text-slate-850 transition cursor-pointer">Terms of Service</span></li>
             </ul>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 font-mono text-[10px]">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 font-mono text-[10px] text-slate-400">
           <span>© {new Date().getFullYear()} Path Excel. All rights reserved.</span>
-          <span className="text-slate-650">Handcrafted for Professional Office Readiness.</span>
+          <span>Handcrafted for Professional Office Readiness.</span>
         </div>
       </footer>
 
