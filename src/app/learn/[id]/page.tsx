@@ -12,7 +12,10 @@ import {
   BookOpen, 
   ChevronRight, 
   CheckCircle,
-  HelpCircle
+  HelpCircle,
+  Clock,
+  Sparkles,
+  Award
 } from 'lucide-react';
 import { useProgress } from '@/hooks/useProgress';
 import Spreadsheet from '@/components/shared/Spreadsheet';
@@ -35,7 +38,7 @@ export default function LessonDetailPage({ params }: PageProps) {
   // Spreadsheet state for the mini practice
   const [sheetState, setSheetState] = useState<SpreadsheetState | null>(null);
   
-  // Feedback states
+  // Feedback states for spreadsheet
   const [evaluationResult, setEvaluationResult] = useState<{
     checked: boolean;
     isCorrect: boolean;
@@ -45,6 +48,10 @@ export default function LessonDetailPage({ params }: PageProps) {
   } | null>(null);
 
   const [showHint, setShowHint] = useState(false);
+
+  // Mini Quiz States
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [quizFeedback, setQuizFeedback] = useState<{ checked: boolean; isCorrect: boolean } | null>(null);
 
   // Load lesson details
   useEffect(() => {
@@ -56,6 +63,8 @@ export default function LessonDetailPage({ params }: PageProps) {
       // Reset feedback states
       setEvaluationResult(null);
       setShowHint(false);
+      setSelectedOption(null);
+      setQuizFeedback(null);
     }
   }, [id]);
 
@@ -99,7 +108,7 @@ export default function LessonDetailPage({ params }: PageProps) {
     if (!isFormula) {
       reason = 'Your formula must start with an equals sign ("=").';
     } else if (!isFormulaMatch && !isValueMatch) {
-      reason = `Evaluated value is "${userComputed}", but we expected "${lesson.miniPractice.expectedValue}". Check your math and variables.`;
+      reason = `Evaluated value is "${userComputed}", but we expected "${lesson.miniPractice.expectedValue}". Check your variables.`;
     }
 
     setEvaluationResult({
@@ -113,6 +122,12 @@ export default function LessonDetailPage({ params }: PageProps) {
     if (isCorrect) {
       updateLessonProgress(lesson.id, true, lesson.nextLessonId);
     }
+  };
+
+  const handleCheckQuiz = () => {
+    if (!lesson || !lesson.miniQuiz || selectedOption === null) return;
+    const isCorrect = selectedOption === lesson.miniQuiz.answerIndex;
+    setQuizFeedback({ checked: true, isCorrect });
   };
 
   const handleResetPractice = () => {
@@ -132,7 +147,7 @@ export default function LessonDetailPage({ params }: PageProps) {
   const isCompleted = progress.completedLessonIds.includes(lesson.id);
 
   return (
-    <div className="flex flex-col min-h-full p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-6xl mx-auto">
+    <div className="flex flex-col min-h-full p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-6xl mx-auto selection:bg-emerald-500 selection:text-white">
       
       {/* Back navigation */}
       <div className="flex items-center justify-between">
@@ -157,12 +172,31 @@ export default function LessonDetailPage({ params }: PageProps) {
         {/* Left Column: Lesson Explanations */}
         <div className="space-y-6">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">
-              {lesson.category}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">
+                {lesson.category}
+              </span>
+              <span className="text-slate-650 font-mono text-[9px]">•</span>
+              <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                <Clock className="w-3 h-3 text-slate-500" />
+                {lesson.estimatedTime}
+              </span>
+            </div>
             <h1 className="text-2xl font-extrabold text-slate-100">
               {lesson.title}
             </h1>
+          </div>
+
+          {/* SaaS Concept Image Vector Mockup Placeholder */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col items-center justify-center min-h-[140px] relative overflow-hidden select-none">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-2xl rounded-full" />
+            <div className="w-full max-w-sm bg-slate-950 border border-slate-850 rounded-xl p-3 shadow-inner space-y-2 text-center relative z-10">
+              <span className="text-[9px] text-slate-500 font-mono uppercase tracking-wider block">Visual Representation Vector</span>
+              <div className="bg-slate-900 border border-slate-800 p-2 rounded-lg text-emerald-450 font-mono text-xs font-bold inline-block">
+                {lesson.syntax}
+              </div>
+              <p className="text-[10px] text-slate-400 font-sans italic">{lesson.example}</p>
+            </div>
           </div>
 
           {/* Explanation text */}
@@ -183,10 +217,7 @@ export default function LessonDetailPage({ params }: PageProps) {
 
           {/* Example Data Table */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-6 space-y-4">
-            <h2 className="text-sm font-bold text-slate-350 uppercase tracking-wider">Visual Example</h2>
-            <p className="text-xs text-slate-400 font-sans leading-relaxed">
-              {lesson.example}
-            </p>
+            <h2 className="text-sm font-bold text-slate-350 uppercase tracking-wider">Visual Table Example</h2>
             
             {/* Table representation */}
             <div className="overflow-x-auto rounded-xl border border-slate-850 bg-slate-950">
@@ -217,7 +248,7 @@ export default function LessonDetailPage({ params }: PageProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-slate-900 border border-slate-850 rounded-2xl p-5 space-y-3">
               <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">How to implement</h3>
-              <ol className="list-decimal pl-4 text-xs text-slate-400 space-y-2 font-sans leading-relaxed">
+              <ol className="list-decimal pl-4 text-xs text-slate-405 space-y-2 font-sans leading-relaxed">
                 {lesson.stepByStep.map((step, i) => (
                   <li key={i}>{step}</li>
                 ))}
@@ -229,13 +260,90 @@ export default function LessonDetailPage({ params }: PageProps) {
                 <AlertTriangle className="w-3.5 h-3.5" />
                 Common Mistakes
               </h3>
-              <ul className="list-disc pl-4 text-xs text-slate-400 space-y-2 font-sans leading-relaxed">
+              <ul className="list-disc pl-4 text-xs text-slate-405 space-y-2 font-sans leading-relaxed">
                 {lesson.commonMistakes.map((mistake, i) => (
                   <li key={i}>{mistake}</li>
                 ))}
               </ul>
             </div>
           </div>
+
+          {/* Concept Summary Block */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3 font-sans">
+            <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-450" />
+              Concept Summary
+            </h3>
+            <p className="text-xs text-slate-400 leading-relaxed font-sans">
+              {lesson.summary}
+            </p>
+          </div>
+
+          {/* Mini Quiz Section */}
+          {lesson.miniQuiz && (
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+              <div className="flex items-center gap-2 border-b border-slate-850 pb-3">
+                <HelpCircle className="w-4.5 h-4.5 text-emerald-400" />
+                <h3 className="text-sm font-bold text-slate-200">Mini Concept Quiz</h3>
+              </div>
+              
+              <div className="space-y-3">
+                <p className="text-xs text-slate-300 font-semibold font-sans">{lesson.miniQuiz.question}</p>
+                <div className="grid grid-cols-1 gap-2">
+                  {lesson.miniQuiz.options.map((opt, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setSelectedOption(idx);
+                        setQuizFeedback(null);
+                      }}
+                      className={`w-full px-4 py-2.5 rounded-xl text-xs font-semibold text-left transition border ${
+                        selectedOption === idx
+                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                          : 'bg-slate-950 text-slate-400 border-slate-850 hover:bg-slate-900'
+                      }`}
+                    >
+                      <span className="inline-flex w-5 h-5 rounded-full bg-slate-900 border border-slate-800 text-[10px] font-bold items-center justify-center mr-2 uppercase">
+                        {String.fromCharCode(97 + idx)}
+                      </span>
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={handleCheckQuiz}
+                    disabled={selectedOption === null}
+                    className="px-5 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-bold rounded-xl text-xs transition"
+                  >
+                    Submit Quiz
+                  </button>
+                </div>
+
+                {quizFeedback && (
+                  <div className={`p-4 border rounded-xl flex items-start gap-2.5 text-xs ${
+                    quizFeedback.isCorrect
+                      ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-400'
+                      : 'bg-rose-950/20 border-rose-500/30 text-rose-400'
+                  }`}>
+                    {quizFeedback.isCorrect ? (
+                      <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    ) : (
+                      <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                    )}
+                    <p className="font-sans leading-relaxed">
+                      {quizFeedback.isCorrect
+                        ? 'Correct! You matched the concept answer successfully.'
+                        : 'Incorrect answer. Read the concept explanation above and try again!'
+                      }
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
         </div>
 
         {/* Right Column: Mini Spreadsheet Practice */}

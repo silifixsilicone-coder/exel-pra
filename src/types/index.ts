@@ -48,6 +48,14 @@ export interface Lesson {
   commonMistakes: string[];
   miniPractice: MiniPractice;
   nextLessonId?: string;
+  estimatedTime: string;
+  summary: string;
+  imagesPlaceholder?: string;
+  miniQuiz?: {
+    question: string;
+    options: string[];
+    answerIndex: number;
+  };
 }
 
 export interface Question {

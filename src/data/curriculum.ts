@@ -10,85 +10,141 @@ export const curriculumCategories: CurriculumCategory[] = [
   {
     id: 'excel-basics',
     name: 'Excel Basics',
-    description: 'Learn layout, cell referencing, and basic navigation.',
+    description: 'Learn layout, navigation, grid coordinate basics, and entering data.',
     difficulty: 'Beginner',
-    lessonsCount: 1
+    lessonsCount: 10
   },
   {
     id: 'formatting',
     name: 'Formatting',
-    description: 'Format text, cell fills, currency, percentages, and borders.',
+    description: 'Master font styles, cell borders, alignment, number, and currency formats.',
     difficulty: 'Beginner',
-    lessonsCount: 0 // Will extend later
+    lessonsCount: 10
+  },
+  {
+    id: 'cell-references',
+    name: 'Cell References',
+    description: 'Learn relative, absolute ($A$1), and mixed reference types.',
+    difficulty: 'Beginner',
+    lessonsCount: 10
   },
   {
     id: 'basic-formulas',
     name: 'Basic Formulas',
-    description: 'Master simple calculations, SUM, AVERAGE, MIN, and MAX.',
+    description: 'Implement core arithmetic operations and quick SUM, AVERAGE, MIN, and MAX aggregations.',
     difficulty: 'Beginner',
-    lessonsCount: 1
+    lessonsCount: 10
   },
   {
     id: 'logical-functions',
     name: 'Logical Functions',
-    description: 'Implement criteria checking with IF, AND, OR, and COUNTIF.',
+    description: 'Analyze criteria logs using logical checks like IF, AND, OR, XOR, and IFERROR.',
     difficulty: 'Intermediate',
-    lessonsCount: 1
+    lessonsCount: 10
   },
   {
     id: 'text-functions',
     name: 'Text Functions',
-    description: 'Clean and manipulate strings with CONCAT, LEFT, RIGHT, and MID.',
+    description: 'Manipulate text strings with CONCAT, LEFT, RIGHT, MID, LEN, and TRIM.',
     difficulty: 'Beginner',
-    lessonsCount: 0
+    lessonsCount: 10
   },
   {
-    id: 'date-functions',
-    name: 'Date Functions',
-    description: 'Calculate dates and timing with TODAY, NOW, and YEAR.',
+    id: 'date-time',
+    name: 'Date & Time',
+    description: 'Work with dates, calendar metrics, and timestamps using TODAY, NOW, DATEDIF, and YEAR.',
     difficulty: 'Beginner',
-    lessonsCount: 0
+    lessonsCount: 10
   },
   {
     id: 'lookup-functions',
     name: 'Lookup Functions',
-    description: 'Search data across sheets with VLOOKUP, INDEX, and MATCH.',
+    description: 'Retrieve values across tables with VLOOKUP, HLOOKUP, XLOOKUP, INDEX, and MATCH.',
     difficulty: 'Intermediate',
-    lessonsCount: 1
+    lessonsCount: 10
   },
   {
-    id: 'math-functions',
-    name: 'Math Functions',
-    description: 'Advanced summing and rounding using SUMIF, SUMIFS, and ROUND.',
+    id: 'math-statistical',
+    name: 'Math & Statistical',
+    description: 'Master advanced math calculations with SUMIF, SUMIFS, COUNTIF, COUNTIFS, and ROUND.',
     difficulty: 'Advanced',
-    lessonsCount: 0
+    lessonsCount: 10
+  },
+  {
+    id: 'data-cleaning',
+    name: 'Data Cleaning',
+    description: 'Clean raw data records, strip whitespace, remove duplicates, and resolve errors.',
+    difficulty: 'Intermediate',
+    lessonsCount: 10
+  },
+  {
+    id: 'sorting-filtering',
+    name: 'Sorting & Filtering',
+    description: 'Organize data arrays, sort values alphabetically, and filter specific metrics.',
+    difficulty: 'Beginner',
+    lessonsCount: 10
+  },
+  {
+    id: 'conditional-formatting',
+    name: 'Conditional Formatting',
+    description: 'Highlight cells dynamically based on numeric thresholds and text matches.',
+    difficulty: 'Intermediate',
+    lessonsCount: 10
+  },
+  {
+    id: 'data-validation',
+    name: 'Data Validation',
+    description: 'Restrict inputs using custom dropdown lists, range bounds, and cell error popups.',
+    difficulty: 'Intermediate',
+    lessonsCount: 10
   },
   {
     id: 'charts',
     name: 'Charts',
-    description: 'Visualize data using column, bar, line, and pie charts.',
+    description: 'Visualize data values using column, bar, line, pie, scatter, and area graphs.',
     difficulty: 'Intermediate',
-    lessonsCount: 0
+    lessonsCount: 10
   },
   {
     id: 'pivot-tables',
     name: 'Pivot Tables',
-    description: 'Summarize large datasets dynamically without writing code.',
+    description: 'Group, summarize, filter, and drill down into bulk databases dynamically.',
     difficulty: 'Advanced',
-    lessonsCount: 0
+    lessonsCount: 10
   },
   {
     id: 'dashboard',
     name: 'Dashboard',
-    description: 'Design beautiful summary grids and dynamic panels.',
+    description: 'Assemble dynamic summary panels, KPI cards, milestone trackers, and heat maps.',
     difficulty: 'Advanced',
-    lessonsCount: 0
+    lessonsCount: 10
   },
   {
-    id: 'mis-reports',
-    name: 'MIS Reports',
-    description: 'Compile management information reports for business decisions.',
+    id: 'mis-reporting',
+    name: 'MIS Reporting',
+    description: 'Compile management information audit reports, variance registers, and P&L sheets.',
     difficulty: 'Advanced',
-    lessonsCount: 0
+    lessonsCount: 10
+  },
+  {
+    id: 'automation-basics',
+    name: 'Automation Basics',
+    description: 'Learn the basic concepts of automated worksheets, macro recording, and scripting loops.',
+    difficulty: 'Advanced',
+    lessonsCount: 10
+  },
+  {
+    id: 'power-query',
+    name: 'Power Query Basics',
+    description: 'Connect, transform, shape, and merge multiple database spreadsheets dynamically.',
+    difficulty: 'Advanced',
+    lessonsCount: 10
+  },
+  {
+    id: 'tips-tricks',
+    name: 'Excel Tips & Tricks',
+    description: 'Learn keyboard binding shortcuts, flash fill, paste special, and optimization tips.',
+    difficulty: 'Beginner',
+    lessonsCount: 10
   }
 ];
