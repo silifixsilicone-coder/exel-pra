@@ -13,7 +13,13 @@ import {
   BookOpen,
   Award,
   Lock,
-  Eye
+  Eye,
+  PanelLeft,
+  ChevronLeft,
+  Compass,
+  CheckCircle2,
+  HelpCircle,
+  Play
 } from 'lucide-react';
 import { useProgress } from '@/hooks/useProgress';
 import Spreadsheet from '@/components/shared/Spreadsheet';
@@ -31,11 +37,16 @@ export default function PracticeDetailPage({ params }: PageProps) {
   const id = resolvedParams.id;
 
   const { progress, isLoaded, updateQuestionProgress, metrics } = useProgress();
-  const [question, setQuestion] = useState<Question | null>(null);
   
-  // Spreadsheet state
+  // Active Question and Spreadsheet State managed locally to prevent page reload
+  const [activeQuestion, setActiveQuestion] = useState<Question | null>(null);
   const [sheetState, setSheetState] = useState<SpreadsheetState | null>(null);
   
+  // UI Panels State
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showHint, setShowHint] = useState(false);
+  const [showSolution, setShowSolution] = useState(false);
+
   // Evaluation feedbacks
   const [evaluationResult, setEvaluationResult] = useState<{
     checked: boolean;
@@ -45,24 +56,66 @@ export default function PracticeDetailPage({ params }: PageProps) {
     reason?: string;
   } | null>(null);
 
-  const [showHint, setShowHint] = useState(false);
-  const [showSolution, setShowSolution] = useState(false);
-
-  // Load question details
+  // Load question details from URL parameter on initial mount or back/forward actions
   useEffect(() => {
     const foundQ = getQuestionById(id);
     if (foundQ) {
-      setQuestion(foundQ);
+      setActiveQuestion(foundQ);
       setSheetState(JSON.parse(JSON.stringify(foundQ.initialGrid)));
-      
-      // Reset feedback states
       setEvaluationResult(null);
       setShowHint(false);
       setShowSolution(false);
+      localStorage.setItem('practice_last_viewed', foundQ.id);
     }
   }, [id]);
 
-  if (!isLoaded || !question || !sheetState) {
+  // Handle local transitions without triggering a full page reload
+  const handleLoadQuestion = (q: Question) => {
+    setActiveQuestion(q);
+    setSheetState(JSON.parse(JSON.stringify(q.initialGrid)));
+    setEvaluationResult(null);
+    setShowHint(false);
+    setShowSolution(false);
+    localStorage.setItem('practice_last_viewed', q.id);
+    
+    // Update the browser URL address bar dynamically without reloading the bundle
+    window.history.replaceState(null, '', `/practice/${q.id}`);
+  };
+
+  // Keyboard Event Binders
+  useEffect(() => {
+    if (!activeQuestion) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Avoid firing transition shortcuts if user is typing inside textboxes or editable cells
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.hasAttribute('contenteditable') ||
+        target.closest('.excel-editor-input') ||
+        target.closest('[contenteditable="true"]')
+      ) {
+        return;
+      }
+
+      const currentIndex = practiceQuestionsData.findIndex(q => q.id === activeQuestion.id);
+      if (e.key === 'ArrowLeft') {
+        if (currentIndex > 0) {
+          handleLoadQuestion(practiceQuestionsData[currentIndex - 1]);
+        }
+      } else if (e.key === 'ArrowRight') {
+        if (currentIndex < practiceQuestionsData.length - 1) {
+          handleLoadQuestion(practiceQuestionsData[currentIndex + 1]);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeQuestion]);
+
+  if (!isLoaded || !activeQuestion || !sheetState) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-slate-950 text-slate-400">
         <div className="flex flex-col items-center gap-3">
@@ -78,9 +131,9 @@ export default function PracticeDetailPage({ params }: PageProps) {
   };
 
   const handleCheckAnswer = () => {
-    if (!sheetState || !question) return;
+    if (!sheetState || !activeQuestion) return;
 
-    const targetKey = question.targetCell.toUpperCase();
+    const targetKey = activeQuestion.targetCell.toUpperCase();
     const cell = sheetState.cells[targetKey];
     
     const userValue = cell ? cell.value.trim() : '';
@@ -89,12 +142,12 @@ export default function PracticeDetailPage({ params }: PageProps) {
     const isFormula = userValue.startsWith('=');
     const normalizedFormula = userValue.replace(/\s+/g, '').toUpperCase();
     
-    const isFormulaMatch = question.expectedFormulas.some(f => {
+    const isFormulaMatch = activeQuestion.expectedFormulas.some(f => {
       const normalizedExpected = f.replace(/\s+/g, '').toUpperCase();
       return normalizedFormula === normalizedExpected;
     });
 
-    const isValueMatch = String(userComputed).toLowerCase() === String(question.expectedValue).toLowerCase();
+    const isValueMatch = String(userComputed).toLowerCase() === String(activeQuestion.expectedValue).toLowerCase();
     
     const isCorrect = isFormula && (isFormulaMatch || isValueMatch);
 
@@ -102,266 +155,348 @@ export default function PracticeDetailPage({ params }: PageProps) {
     if (!isFormula) {
       reason = 'Your formula must start with an equals sign ("=").';
     } else if (!isFormulaMatch && !isValueMatch) {
-      reason = `Evaluated value is "${userComputed}", but expected "${question.expectedValue}". Check cell references.`;
+      reason = `Evaluated value is "${userComputed}", but expected "${activeQuestion.expectedValue}". Check cell references.`;
     }
 
     setEvaluationResult({
       checked: true,
       isCorrect,
       userFormula: userValue,
-      expectedFormula: question.solutionFormula,
+      expectedFormula: activeQuestion.solutionFormula,
       reason
     });
 
     // Update progress in local storage
-    updateQuestionProgress(question.id, isCorrect, userValue);
+    updateQuestionProgress(activeQuestion.id, isCorrect, userValue);
   };
 
   const handleResetQuestion = () => {
-    setSheetState(JSON.parse(JSON.stringify(question.initialGrid)));
+    setSheetState(JSON.parse(JSON.stringify(activeQuestion.initialGrid)));
     setEvaluationResult(null);
     setShowHint(false);
     setShowSolution(false);
   };
 
+  const currentIndex = practiceQuestionsData.findIndex(q => q.id === activeQuestion.id);
+  const totalCount = practiceQuestionsData.length;
+  const isFirst = currentIndex === 0;
+  const isLast = currentIndex === totalCount - 1;
+
   const handleNextQuestion = () => {
-    const currentIndex = practiceQuestionsData.findIndex(q => q.id === question.id);
-    const nextIndex = (currentIndex + 1) % practiceQuestionsData.length;
-    const nextQ = practiceQuestionsData[nextIndex];
-    router.push(`/practice/${nextQ.id}`);
+    if (!isLast) {
+      handleLoadQuestion(practiceQuestionsData[currentIndex + 1]);
+    } else {
+      router.push('/practice');
+    }
   };
 
-  const isCompleted = progress.completedQuestionIds.includes(question.id);
+  const handlePrevQuestion = () => {
+    if (!isFirst) {
+      handleLoadQuestion(practiceQuestionsData[currentIndex - 1]);
+    }
+  };
+
+  const completedQuestions = progress.completedQuestionIds || [];
+  const isCompleted = completedQuestions.includes(activeQuestion.id);
 
   return (
-    <div className="flex flex-col min-h-screen p-4 md:p-6 max-w-7xl mx-auto space-y-6 pb-24 relative">
+    <div className="flex flex-col h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
       
-      {/* Back and Status Header */}
-      <div className="flex items-center justify-between shrink-0">
-        <Link 
-          href="/practice"
-          className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          Back to Challenges
-        </Link>
-        {isCompleted && (
-          <span className="flex items-center gap-1.5 px-3 py-1 text-[11px] font-bold bg-emerald-950/20 text-emerald-455 border border-emerald-900/40 rounded-full select-none">
-            <Check className="w-3.5 h-3.5" />
-            Solved Successfully
-          </span>
-        )}
-      </div>
+      {/* 1. Sticky Top Navigation Bar */}
+      <header className="sticky top-0 z-50 bg-slate-950 border-b border-slate-850 px-4 py-3 shrink-0 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-md">
+        {/* Left segment */}
+        <div className="flex items-center gap-3">
+          <Link 
+            href="/practice"
+            className="flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-white transition"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Challenges List
+          </Link>
+          <div className="w-[1px] h-4 bg-slate-800 hidden md:block" />
+          <button
+            onClick={() => setSidebarOpen(prev => !prev)}
+            className={`p-1.5 rounded-lg border transition ${
+              sidebarOpen ? 'bg-emerald-500/10 text-emerald-450 border-emerald-500/30' : 'bg-slate-900 text-slate-405 border-slate-800 hover:text-white'
+            }`}
+            title="Toggle sidebar catalogue"
+          >
+            <PanelLeft className="w-4 h-4" />
+          </button>
+        </div>
 
-      {/* Main Split Layout Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start flex-1">
+        {/* Middle segment: problem transitions & jump dropdown */}
+        <div className="flex items-center gap-3 select-none">
+          <button
+            onClick={handlePrevQuestion}
+            disabled={isFirst}
+            className="p-1.5 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-850 transition"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          <div className="text-xs font-mono font-bold text-slate-300">
+            Challenge {currentIndex + 1} of {totalCount}
+          </div>
+
+          <button
+            onClick={handleNextQuestion}
+            disabled={isLast && isCompleted}
+            className="p-1.5 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-850 transition"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+
+          <select
+            value={activeQuestion.id}
+            onChange={(e) => {
+              const q = getQuestionById(e.target.value);
+              if (q) handleLoadQuestion(q);
+            }}
+            className="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none text-slate-300 font-sans cursor-pointer max-w-[160px]"
+          >
+            {practiceQuestionsData.map((q, idx) => (
+              <option key={q.id} value={q.id}>
+                Q{idx + 1}. {q.title}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Right segment: progress metrics */}
+        <div className="flex items-center gap-4 text-xs font-mono select-none">
+          <div className="hidden lg:flex items-center gap-2 text-slate-450">
+            <span>Completed: <strong className="text-emerald-450">{completedQuestions.length}</strong></span>
+            <span>•</span>
+            <span>Remaining: <strong className="text-slate-300">{totalCount - completedQuestions.length}</strong></span>
+          </div>
+          <div className="w-[1px] h-4 bg-slate-800 hidden lg:block" />
+          <div className="flex items-center gap-1.5">
+            <Award className="w-4 h-4 text-emerald-450" />
+            <span className="font-bold text-emerald-450">{metrics.accuracy}% accuracy</span>
+          </div>
+        </div>
+      </header>
+
+      {/* 2. Workspace Viewport layout */}
+      <div className="flex-1 flex flex-row min-h-0 relative">
         
-        {/* Left Sidebar (25% = lg:col-span-3) */}
-        <div className="lg:col-span-3 space-y-6">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
-            <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-3">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">
-                Challenge details
-              </span>
-              <span className="px-2 py-0.5 text-[9px] font-bold bg-slate-950 border border-slate-850 text-slate-400 rounded-md font-mono">
-                {question.estimatedTime}
-              </span>
+        {/* Left Side: Collapsible Sidebar catalog drawer */}
+        {sidebarOpen && (
+          <aside className="w-64 bg-slate-950 border-r border-slate-850 shrink-0 flex flex-col min-h-0 z-40 animate-in slide-in-from-left duration-200 select-none">
+            <div className="p-4 border-b border-slate-850 shrink-0">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-455 flex items-center gap-2">
+                <Compass className="w-4 h-4 text-emerald-400" />
+                Challenges List
+              </h3>
             </div>
             
-            <div className="space-y-3">
-              <div className="flex flex-wrap gap-1.5">
-                <span className="px-2 py-0.5 text-[9px] font-bold bg-slate-950 border border-slate-850 text-slate-300 rounded">
-                  {question.category}
+            <div className="flex-1 overflow-y-auto p-2 space-y-1">
+              {practiceQuestionsData.map((q, idx) => {
+                const isQCompleted = completedQuestions.includes(q.id);
+                const isQCurrent = q.id === activeQuestion.id;
+
+                return (
+                  <button
+                    key={q.id}
+                    onClick={() => handleLoadQuestion(q)}
+                    className={`w-full flex items-center justify-between p-2.5 rounded-lg text-xs transition text-left ${
+                      isQCurrent
+                        ? 'bg-slate-900 text-white font-bold border border-slate-800'
+                        : 'text-slate-400 hover:bg-slate-900/40 hover:text-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="font-mono text-[10px] text-slate-500 shrink-0">
+                        {String(idx + 1).padStart(2, '0')}.
+                      </span>
+                      <span className="truncate">{q.title}</span>
+                    </div>
+                    {isQCompleted ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-450 shrink-0 ml-1.5" />
+                    ) : isQCurrent ? (
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-450 shrink-0 ml-1.5 animate-pulse" />
+                    ) : (
+                      <HelpCircle className="w-3.5 h-3.5 text-slate-650 shrink-0 ml-1.5" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </aside>
+        )}
+
+        {/* Right Side: Split grid contents */}
+        <main className="flex-1 grid grid-cols-1 lg:grid-cols-12 min-h-0 overflow-y-auto p-4 md:p-6 gap-6 relative">
+          
+          {/* Challenge Description panel */}
+          <div className="lg:col-span-4 space-y-6 overflow-y-auto max-h-full pr-1">
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+              <div className="flex items-center justify-between gap-2 border-b border-slate-850 pb-3">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block font-mono">
+                  {activeQuestion.category}
                 </span>
                 <span className={`px-2 py-0.5 text-[9px] font-bold rounded border ${
-                  question.difficulty === 'Beginner' 
+                  activeQuestion.difficulty === 'Beginner' 
                     ? 'bg-emerald-950/20 text-emerald-400 border-emerald-900/50' 
-                    : question.difficulty === 'Intermediate'
+                    : activeQuestion.difficulty === 'Intermediate'
                     ? 'bg-amber-950/20 text-amber-400 border-amber-900/50'
                     : 'bg-rose-950/20 text-rose-400 border-rose-900/50'
                 }`}>
-                  {question.difficulty}
+                  {activeQuestion.difficulty}
                 </span>
               </div>
-              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-1.5 leading-tight">
-                <span className="text-emerald-450 font-mono">Q{question.questionNum}.</span>
-                {question.title}
-              </h2>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                <strong className="text-slate-350 block mb-0.5 font-sans">Scenario:</strong> 
-                {question.scenario}
-              </p>
               
-              <div className="bg-slate-950 border border-slate-850 rounded-xl p-3.5 mt-2">
-                <strong className="text-emerald-450 text-[10px] font-semibold uppercase tracking-wider block mb-1">Your Objective</strong>
-                <p className="text-slate-100 font-semibold text-xs leading-normal">{question.task}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+              <div className="space-y-3">
+                <h2 className="text-lg font-bold text-slate-100 flex items-center gap-1.5 leading-tight">
+                  <span className="text-emerald-450 font-mono">Q{currentIndex + 1}.</span>
+                  {activeQuestion.title}
+                </h2>
+                
+                <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                  {activeQuestion.description}
+                </p>
 
-        {/* Center Area (58% = lg:col-span-7) */}
-        <div className="lg:col-span-7 flex flex-col space-y-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg flex flex-col h-[520px] min-h-0 relative">
-            <div className="flex-1 min-h-0 relative">
-              <Spreadsheet 
-                initialState={sheetState} 
-                onChange={handleGridChange}
-              />
-            </div>
-          </div>
-
-          {/* Answer Feedbacks */}
-          {evaluationResult && (
-            <div className={`border rounded-2xl p-4 flex items-start gap-3 animate-in fade-in slide-in-from-bottom-2 duration-200 ${
-              evaluationResult.isCorrect 
-                ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-355' 
-                : 'bg-rose-950/20 border-rose-500/30 text-rose-350'
-            }`}>
-              {evaluationResult.isCorrect ? (
-                <Check className="w-5 h-5 text-emerald-450 shrink-0 mt-0.5" />
-              ) : (
-                <AlertTriangle className="w-5 h-5 text-rose-455 shrink-0 mt-0.5" />
-              )}
-              <div className="space-y-1.5 w-full text-xs">
-                <h4 className="font-bold text-sm">
-                  {evaluationResult.isCorrect ? '✅ Correct Answer' : '❌ Incorrect Answer'}
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-1.5">
-                  <div>
-                    <div className="text-slate-450 font-medium">Your Formula:</div>
-                    <code className="block mt-1 p-2 bg-slate-950 rounded border border-slate-850 font-mono text-emerald-350">
-                      {evaluationResult.userFormula || '(None)'}
-                    </code>
-                  </div>
-                  <div>
-                    <div className="text-slate-450 font-medium">Expected Formula:</div>
-                    <code className="block mt-1 p-2 bg-slate-950 rounded border border-slate-850 font-mono text-slate-300 font-bold">
-                      {evaluationResult.expectedFormula}
-                    </code>
-                  </div>
+                <p className="text-xs text-slate-405 leading-relaxed font-sans">
+                  <strong className="text-slate-350 block mb-0.5">Business Context:</strong> 
+                  {activeQuestion.scenario}
+                </p>
+                
+                <div className="bg-slate-950 border border-slate-850 rounded-xl p-3.5 mt-2">
+                  <strong className="text-emerald-450 text-[10px] font-bold uppercase tracking-wider block mb-1">Your Objective</strong>
+                  <p className="text-slate-100 font-semibold text-xs leading-normal font-sans">{activeQuestion.task}</p>
                 </div>
-                {!evaluationResult.isCorrect && evaluationResult.reason && (
-                  <p className="text-rose-400 mt-2 font-medium font-sans">
-                    Reason: {evaluationResult.reason}
-                  </p>
-                )}
-                {evaluationResult.isCorrect && (
-                  <p className="text-slate-355 mt-2 font-sans">
-                    Fantastic! The spreadsheet resolved your formula correctly. You have completed this question.
-                  </p>
-                )}
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Right Sidebar (17% = lg:col-span-2) */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Progress Widget */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3.5">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5 select-none">
-              <Award className="w-4 h-4 text-emerald-400" />
-              Practice Progress
-            </h3>
-            
-            <div className="space-y-2 font-mono text-xs">
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500 font-sans">Solved</span>
-                <span className="font-bold text-slate-200">{metrics.questionsSolved} / {practiceQuestionsData.length}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500 font-sans">Accuracy</span>
-                <span className="font-bold text-emerald-400">{metrics.accuracy}%</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Hint Widget */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3.5">
-            <h3 className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
-              <Lightbulb className="w-4 h-4 text-amber-500" />
-              Challenge Helper
-            </h3>
-            <div className="space-y-2.5">
-              <div>
-                <span className="text-[10px] text-slate-500 font-bold uppercase block">Hint</span>
-                <p className="text-[11px] text-slate-300 leading-normal mt-0.5">{question.hint}</p>
-              </div>
-              
-              <div className="border-t border-slate-800/80 pt-2 space-y-2">
-                <div>
-                  <span className="text-[9px] text-slate-500 font-semibold uppercase">Syntax Guide</span>
-                  <code className="block mt-1 p-2 bg-slate-950 rounded border border-slate-850 font-mono text-slate-350 text-[10px] break-all">
-                    {question.formulaSyntax}
-                  </code>
-                </div>
-                <div>
-                  <span className="text-[9px] text-slate-500 font-semibold uppercase">Syntax Example</span>
-                  <code className="block mt-1 p-2 bg-slate-950 rounded border border-slate-850 font-mono text-emerald-455 text-[10px] break-all">
-                    {question.formulaExample}
+            {/* Explanation & Solution block (Only rendered once solved) */}
+            {isCompleted && (
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3.5 animate-in fade-in duration-200">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-450 flex items-center gap-1 font-sans">
+                  <BookOpen className="w-4 h-4 text-emerald-400" />
+                  Conceptual Explanation
+                </h3>
+                <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                  {activeQuestion.explanation || 'Perfect! Using correct references aligns this calculation dynamically inside Microsoft Excel.'}
+                </p>
+                <div className="border-t border-slate-850 pt-3">
+                  <span className="text-[10px] text-slate-500 font-bold uppercase block">Solution Formula</span>
+                  <code className="block mt-1 p-2 bg-slate-950 rounded border border-slate-850 font-mono text-emerald-450 text-xs">
+                    {activeQuestion.solutionFormula}
                   </code>
                 </div>
               </div>
-
-              <div className="border-t border-slate-800/80 pt-2 flex flex-col gap-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-[10px] text-slate-500">Stuck?</span>
-                  <button
-                    onClick={() => setShowSolution(prev => !prev)}
-                    className="flex items-center gap-0.5 text-emerald-400 hover:text-emerald-300 text-[11px] font-bold transition"
-                  >
-                    <Eye className="w-3.5 h-3.5" />
-                    {showSolution ? 'Hide Ans' : 'Show Ans'}
-                  </button>
-                </div>
-                {showSolution && (
-                  <div className="p-2 bg-slate-950 border border-slate-850 rounded-lg animate-in slide-in-from-top-1 duration-150">
-                    <code className="font-mono text-[10px] text-emerald-455 font-bold break-all">
-                      {question.solutionFormula}
-                    </code>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Sticky Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 p-4 z-40 shadow-2xl">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-6">
-          <div className="flex gap-2">
-            <button
-              onClick={handleResetQuestion}
-              className="flex items-center gap-1.5 px-4 py-2 bg-slate-850 hover:bg-slate-800 active:scale-95 text-slate-300 border border-slate-700 rounded-xl text-xs font-semibold transition"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              Reset Sheet
-            </button>
-          </div>
-
-          <div className="flex gap-2">
-            {evaluationResult?.isCorrect && (
-              <button
-                onClick={handleNextQuestion}
-                className="flex items-center gap-1.5 px-5 py-2 bg-slate-800 hover:bg-slate-750 text-white rounded-xl text-xs font-semibold transition"
-              >
-                Next Challenge
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
             )}
-            <button
-              onClick={handleCheckAnswer}
-              className="flex items-center gap-1.5 px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl text-xs font-bold transition shadow-lg shadow-emerald-500/10"
-            >
-              <Check className="w-4 h-4" />
-              Check Answer
-            </button>
           </div>
-        </div>
+
+          {/* Spreadsheet sandbox editor panel */}
+          <div className="lg:col-span-8 flex flex-col space-y-4 min-h-0">
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg flex flex-col h-[520px] min-h-0 relative">
+              <div className="flex-1 min-h-0 relative">
+                <Spreadsheet 
+                  initialState={sheetState} 
+                  onChange={handleGridChange}
+                />
+              </div>
+            </div>
+
+            {/* Answer check controller toolbar */}
+            <div className="flex items-center justify-between gap-3 shrink-0">
+              <div className="flex gap-2">
+                <button
+                  onClick={handleResetQuestion}
+                  className="flex items-center gap-1 px-4 py-2.5 bg-slate-900 hover:bg-slate-850 text-slate-350 border border-slate-805 rounded-xl text-xs font-semibold transition active:scale-95"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Reset
+                </button>
+                <button
+                  onClick={() => setShowHint(prev => !prev)}
+                  className={`flex items-center gap-1 px-4 py-2.5 border rounded-xl text-xs font-semibold transition active:scale-95 ${
+                    showHint ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' : 'bg-slate-900 hover:bg-slate-850 text-slate-350 border-slate-805'
+                  }`}
+                >
+                  <Lightbulb className="w-3.5 h-3.5" />
+                  Hint
+                </button>
+              </div>
+
+              <div className="flex gap-2">
+                {evaluationResult?.isCorrect && (
+                  <button
+                    onClick={handleNextQuestion}
+                    className="flex items-center gap-1.5 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl text-xs font-bold transition shadow-lg shadow-emerald-500/10 active:scale-95 font-sans"
+                  >
+                    {isLast ? 'Finish Practice Set' : 'Next Question'}
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                )}
+                <button
+                  onClick={handleCheckAnswer}
+                  className="flex items-center gap-1.5 px-6 py-2.5 bg-slate-900 hover:bg-slate-850 text-white rounded-xl border border-slate-805 text-xs font-semibold transition active:scale-95 font-sans"
+                >
+                  Check Answer
+                </button>
+              </div>
+            </div>
+
+            {/* Helper tips view */}
+            {showHint && (
+              <div className="p-4 bg-slate-950 border border-amber-900/30 rounded-xl text-xs text-slate-300 leading-relaxed font-sans animate-in fade-in duration-150">
+                <span className="font-bold text-amber-400 uppercase tracking-wide block mb-1">Helpful Tip</span>
+                {activeQuestion.hint}
+              </div>
+            )}
+
+            {/* Result status alerts */}
+            {evaluationResult && (
+              <div className={`border rounded-xl p-4 flex items-start gap-3 animate-in fade-in slide-in-from-bottom-2 duration-150 ${
+                evaluationResult.isCorrect 
+                  ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-300' 
+                  : 'bg-rose-950/20 border-rose-500/30 text-rose-350'
+              }`}>
+                {evaluationResult.isCorrect ? (
+                  <Check className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                ) : (
+                  <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+                )}
+                <div className="space-y-1 w-full text-xs">
+                  <h4 className="font-bold text-sm">
+                    {evaluationResult.isCorrect ? 'Correct Answer! Challenge Cleared' : 'Incorrect Attempt'}
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 font-mono">
+                    <div>
+                      <div className="text-slate-450 font-sans font-medium">Your Formula:</div>
+                      <code className="block mt-1 p-2 bg-slate-950 rounded border border-slate-850 text-emerald-300 break-all">
+                        {evaluationResult.userFormula || '(None)'}
+                      </code>
+                    </div>
+                    <div>
+                      <div className="text-slate-450 font-sans font-medium">Expected Solution:</div>
+                      <code className="block mt-1 p-2 bg-slate-950 rounded border border-slate-850 text-slate-300 font-bold break-all">
+                        {evaluationResult.expectedFormula}
+                      </code>
+                    </div>
+                  </div>
+                  {!evaluationResult.isCorrect && evaluationResult.reason && (
+                    <p className="text-rose-455 font-semibold mt-2 font-sans">
+                      Reason: {evaluationResult.reason}
+                    </p>
+                  )}
+                  {evaluationResult.isCorrect && (
+                    <p className="text-slate-300 mt-2 font-sans">
+                      Excellent! The formula evaluates to the target value successfully. Click Next Question to continue.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+          </div>
+
+        </main>
       </div>
+
     </div>
   );
 }
