@@ -82,11 +82,11 @@ export default function InterviewLabPage() {
 
   // Mock assessments configurations
   const mockPacks = [
-    { id: 'mnc-excel', title: 'MNC Excel Assessment', role: 'Business Analyst' as const, difficulty: 'Medium' as const, count: 8, time: '15 min', categoryFilter: 'Formula' },
-    { id: 'finance-excel', title: 'Finance Excel Assessment', role: 'Accountant' as const, difficulty: 'Hard' as const, count: 6, time: '12 min', categoryFilter: 'Accountant' },
-    { id: 'mis-executive', title: 'MIS Executive Assessment', role: 'MIS Executive' as const, difficulty: 'Medium' as const, count: 8, time: '15 min', categoryFilter: 'MIS Executive' },
-    { id: 'data-entry', title: 'Data Entry Assessment', role: 'Data Entry' as const, difficulty: 'Easy' as const, count: 10, time: '10 min', categoryFilter: 'Data Entry' },
-    { id: 'office-admin', title: 'Office Admin Assessment', role: 'Office Admin' as const, difficulty: 'Easy' as const, count: 8, time: '10 min', categoryFilter: 'Office Admin' }
+    { id: 'mnc-excel', title: 'MNC Excel Assessment', role: 'Excel Analyst' as const, difficulty: 'Medium' as const, count: 8, time: '15 min', categoryFilter: 'Excel Analyst' as const },
+    { id: 'finance-excel', title: 'Finance Excel Assessment', role: 'Accountant' as const, difficulty: 'Hard' as const, count: 6, time: '12 min', categoryFilter: 'Accountant' as const },
+    { id: 'mis-executive', title: 'MIS Executive Assessment', role: 'MIS Executive' as const, difficulty: 'Medium' as const, count: 8, time: '15 min', categoryFilter: 'MIS Executive' as const },
+    { id: 'data-entry', title: 'Data Entry Assessment', role: 'Data Entry' as const, difficulty: 'Easy' as const, count: 10, time: '10 min', categoryFilter: 'Data Entry' as const },
+    { id: 'office-admin', title: 'Office Admin Assessment', role: 'Office Admin' as const, difficulty: 'Easy' as const, count: 8, time: '10 min', categoryFilter: 'Office Admin' as const }
   ];
 
   // Starts an assessment pack
@@ -449,8 +449,8 @@ export default function InterviewLabPage() {
                       {activeQuestion.category}
                     </span>
                     <span className={`px-2 py-0.5 text-[9px] font-bold rounded border ${
-                      activeQuestion.difficulty === 'Easy' ? 'bg-emerald-950/20 text-emerald-400 border-emerald-900/50' :
-                      activeQuestion.difficulty === 'Medium' ? 'bg-amber-950/20 text-amber-400 border-amber-900/50' : 'bg-rose-950/20 text-rose-400 border-rose-900/50'
+                      activeQuestion.difficulty === 'Beginner' ? 'bg-emerald-950/20 text-emerald-400 border-emerald-900/50' :
+                      activeQuestion.difficulty === 'Intermediate' ? 'bg-amber-950/20 text-amber-400 border-amber-900/50' : 'bg-rose-950/20 text-rose-400 border-rose-900/50'
                     }`}>
                       {activeQuestion.difficulty}
                     </span>
@@ -760,9 +760,9 @@ export default function InterviewLabPage() {
                   className="w-full px-3 py-2.5 bg-slate-950 border border-slate-850 text-xs text-slate-350 rounded-xl focus:outline-none focus:border-emerald-500"
                 >
                   <option value="All">All Difficulties</option>
-                  <option value="Easy">Easy</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Hard">Hard</option>
+                  <option value="Beginner">Beginner</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Advanced">Advanced</option>
                 </select>
               </div>
 
@@ -876,8 +876,8 @@ export default function InterviewLabPage() {
                           {q.role}
                         </span>
                         <span className={`px-2 py-0.5 text-[8px] font-bold rounded border ${
-                          q.difficulty === 'Easy' ? 'bg-emerald-950/20 text-emerald-400 border-emerald-900/50' :
-                          q.difficulty === 'Medium' ? 'bg-amber-950/20 text-amber-400 border-amber-900/50' : 'bg-rose-950/20 text-rose-455'
+                          q.difficulty === 'Beginner' ? 'bg-emerald-950/20 text-emerald-400 border-emerald-900/50' :
+                          q.difficulty === 'Intermediate' ? 'bg-amber-950/20 text-amber-400 border-amber-900/50' : 'bg-rose-950/20 text-rose-455'
                         }`}>
                           {q.difficulty}
                         </span>
