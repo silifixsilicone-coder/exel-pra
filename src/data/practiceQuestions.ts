@@ -179,67 +179,191 @@ export const practiceCategories = [
   'Interview'
 ];
 
-// Deterministic seed-based question generator (supporting IDs up to 10,500)
+// Reusable Indian Business Datasets
+const indianNames = [
+  'Amit Sharma', 'Priya Patel', 'Rahul Verma', 'Sneha Joshi', 'Vikram Singh',
+  'Neha Gupta', 'Rajesh Kumar', 'Anjali Mehta', 'Sunil Pawar', 'Deepa Nair',
+  'Rohan Das', 'Kiran Shah', 'Pooja Roy', 'Arjun Sen', 'Maya Rao', 'Suresh Iyer'
+];
+
+const indianCities = [
+  'Mumbai', 'Pune', 'Nagpur', 'Nashik', 'Hyderabad', 'Bangalore', 'Delhi', 'Chennai', 'Kolkata', 'Ahmedabad'
+];
+
+const products = [
+  'Laptop', 'Mouse', 'Keyboard', 'Monitor', 'Chair', 'Printer', 'Desk', 'Webcam', 'Router', 'UPS', 'Scanner'
+];
+
+const gsteins = [
+  '27AAAAA1111A1Z1', '27BBBBB2222B2Z2', '27CCCCC3333C3Z3', '27DDDDD4444D4Z4'
+];
+
+// Dynamic Spreadsheet Generator Engine
 export function generateQuestion(num: number): Question {
   const catIndex = (num - 1) % practiceCategories.length;
   const category = practiceCategories[catIndex];
+  
   const difficulty: 'Beginner' | 'Intermediate' | 'Advanced' = 
     num % 3 === 0 ? 'Advanced' : num % 2 === 0 ? 'Intermediate' : 'Beginner';
 
-  let expectedFormulas = [`=A2*B2`, `=a2*b2`];
-  let expectedValue: string | number | boolean = 600;
-  let task = `Calculate the total revenue in cell C2 by multiplying Units (A2) and Price (B2).`;
-  let hint = `Type =A2*B2 inside target cell C2.`;
-  let solutionFormula = `=A2*B2`;
+  // Determine row count dynamically: Small (5-8 rows), Medium (15-20 rows), Large (50+ rows)
+  let rowCount = 6;
+  if (num % 3 === 1) {
+    rowCount = 18; // Medium
+  } else if (num % 3 === 2) {
+    rowCount = 52; // Large
+  }
+
+  const cells: Record<string, { value: string; bold?: boolean }> = {};
   
-  let cells: Record<string, { value: string; bold?: boolean }> = {
-    A1: { value: 'Units', bold: true },
-    B1: { value: 'Price ($)', bold: true },
-    C1: { value: 'Revenue', bold: true },
-    A2: { value: '50' },
-    B2: { value: '12' },
-    C2: { value: '' }
+  // Reusable random seed selector based on num index
+  const selectValue = <T>(arr: T[], offset: number = 0): T => {
+    const idx = Math.abs(num + offset) % arr.length;
+    return arr[idx];
   };
 
-  if (category === 'Accounting') {
-    task = `Calculate the net asset balance in cell C2 by subtracting liabilities (B2) from assets (A2).`;
-    cells = {
-      A1: { value: 'Assets', bold: true },
-      B1: { value: 'Liabilities', bold: true },
-      C1: { value: 'Net Balance', bold: true },
-      A2: { value: '5000' },
-      B2: { value: '1800' },
-      C2: { value: '' }
-    };
-    expectedFormulas = [`=A2-B2`, `=a2-b2`];
-    expectedValue = 3200;
-    solutionFormula = `=A2-B2`;
-  } else if (category === 'GST') {
-    task = `Find the 18% GST value in cell C2 for tax base amount (A2).`;
-    cells = {
-      A1: { value: 'Amount ($)', bold: true },
-      B1: { value: 'GST Rate', bold: true },
-      C1: { value: 'Calculated GST', bold: true },
-      A2: { value: '2500' },
-      B2: { value: '0.18' },
-      C2: { value: '' }
-    };
-    expectedFormulas = [`=A2*B2`, `=a2*b2`, `=A2*0.18`, `=a2*0.18`];
-    expectedValue = 450;
-    solutionFormula = `=A2*B2`;
-  } else if (category === 'Data Cleaning') {
-    task = `Clean whitespace values in cell A2 by applying the TRIM function inside cell C2.`;
-    cells = {
-      A1: { value: 'Raw Text', bold: true },
-      B1: { value: 'State', bold: true },
-      C1: { value: 'Clean Output', bold: true },
-      A2: { value: '  FormatText  ' },
-      B2: { value: 'Pending' },
-      C2: { value: '' }
-    };
-    expectedFormulas = [`=TRIM(A2)`, `=trim(a2)`];
-    expectedValue = 'FormatText';
-    solutionFormula = `=TRIM(A2)`;
+  // Determine business templates
+  const templateType = selectValue([
+    'Marksheet', 'SalarySheet', 'GSTInvoice', 'SalesRegister', 
+    'ExpenseTracker', 'InventoryManagement', 'MonthlyBudget', 'ProfitLoss'
+  ], catIndex);
+
+  let task = '';
+  let hint = '';
+  let expectedValue: string | number = 0;
+  let expectedFormulas: string[] = [];
+  let solutionFormula = '';
+  let title = `${category} - ${templateType} Check`;
+  let scenario = `Configure metrics for this ${templateType} scenario inside the ${category} workflow.`;
+
+  if (templateType === 'Marksheet') {
+    title = `${category} - Student Marksheet (#${num})`;
+    scenario = `Analyze student grades inside a school Marks registry layout. Row size is ${rowCount}.`;
+    
+    // Headers
+    cells['A1'] = { value: 'Student Name', bold: true };
+    cells['B1'] = { value: 'Marks Obtained', bold: true };
+    
+    let sumVal = 0;
+    for (let r = 2; r <= rowCount; r++) {
+      const name = selectValue(indianNames, r);
+      const marks = 45 + (Math.abs(num + r) % 50); // marks between 45 and 95
+      cells[`A${r}`] = { value: name };
+      cells[`B${r}`] = { value: String(marks) };
+      sumVal += marks;
+    }
+    
+    // Target cell at bottom
+    const targetRow = rowCount + 1;
+    cells[`A${targetRow}`] = { value: 'Average Marks', bold: true };
+    cells[`B${targetRow}`] = { value: '' };
+
+    const avgVal = Math.round((sumVal / (rowCount - 1)) * 10) / 10;
+    expectedValue = avgVal;
+    expectedFormulas = [
+      `=AVERAGE(B2:B${rowCount})`,
+      `=average(b2:b${rowCount})`
+    ];
+    solutionFormula = `=AVERAGE(B2:B${rowCount})`;
+    task = `Calculate the AVERAGE marks of students in cell B${targetRow} from range B2 to B${rowCount}.`;
+    hint = `Type =AVERAGE(B2:B${rowCount}) in cell B${targetRow}.`;
+
+  } else if (templateType === 'GSTInvoice') {
+    title = `${category} - Indian GST Register (#${num})`;
+    scenario = `Track tax payments across GST transactions. Total row size is ${rowCount}.`;
+    
+    cells['A1'] = { value: 'Invoice No', bold: true };
+    cells['B1'] = { value: 'GSTIN', bold: true };
+    cells['C1'] = { value: 'Base Amount', bold: true };
+    cells['D1'] = { value: 'GST Tax', bold: true };
+
+    let baseSum = 0;
+    for (let r = 2; r <= rowCount; r++) {
+      const invNo = `INV-2026-${1000 + r}`;
+      const gst = selectValue(gsteins, r);
+      const amt = 1000 + (Math.abs(num + r) % 9) * 500; // amounts 1000 to 5000
+      cells[`A${r}`] = { value: invNo };
+      cells[`B${r}`] = { value: gst };
+      cells[`C${r}`] = { value: String(amt) };
+      cells[`D${r}`] = { value: String(Math.round(amt * 0.18)) }; // GST 18%
+      baseSum += amt;
+    }
+
+    const targetRow = rowCount + 1;
+    cells[`B${targetRow}`] = { value: 'Total Base Sum', bold: true };
+    cells[`C${targetRow}`] = { value: '' };
+
+    expectedValue = baseSum;
+    expectedFormulas = [
+      `=SUM(C2:C${rowCount})`,
+      `=sum(c2:c${rowCount})`
+    ];
+    solutionFormula = `=SUM(C2:C${rowCount})`;
+    task = `Calculate the total base sales sum in cell C${targetRow} from range C2 to C${rowCount}.`;
+    hint = `Type =SUM(C2:C${rowCount}) in cell C${targetRow}.`;
+
+  } else if (templateType === 'ExpenseTracker') {
+    title = `${category} - Business Expense Tracker (#${num})`;
+    scenario = `Summarize corporate department expenditures. Total row size is ${rowCount}.`;
+    
+    cells['A1'] = { value: 'Department', bold: true };
+    cells['B1'] = { value: 'Expense ($)', bold: true };
+
+    const departments = ['Marketing', 'Sales', 'HR', 'IT', 'Operations', 'Finance', 'Legal', 'Support'];
+    let totalExpense = 0;
+    for (let r = 2; r <= rowCount; r++) {
+      const dept = selectValue(departments, r);
+      const cost = 200 + (Math.abs(num + r) % 15) * 100;
+      cells[`A${r}`] = { value: `${dept} - Unit ${r}` };
+      cells[`B${r}`] = { value: String(cost) };
+      totalExpense += cost;
+    }
+
+    const targetRow = rowCount + 1;
+    cells[`A${targetRow}`] = { value: 'Grand Total', bold: true };
+    cells[`B${targetRow}`] = { value: '' };
+
+    expectedValue = totalExpense;
+    expectedFormulas = [
+      `=SUM(B2:B${rowCount})`,
+      `=sum(b2:b${rowCount})`
+    ];
+    solutionFormula = `=SUM(B2:B${rowCount})`;
+    task = `Sum up the total expenses in cell B${targetRow} from range B2 to B${rowCount}.`;
+    hint = `Type =SUM(B2:B${rowCount}) in B${targetRow}.`;
+
+  } else {
+    // Default template: Sales Register
+    title = `${category} - Regional Sales Register (#${num})`;
+    scenario = `Review retail units sales registers in cities. Total row size is ${rowCount}.`;
+    
+    cells['A1'] = { value: 'City', bold: true };
+    cells['B1'] = { value: 'Product SKU', bold: true };
+    cells['C1'] = { value: 'Sales Amount', bold: true };
+
+    let maxSales = 0;
+    for (let r = 2; r <= rowCount; r++) {
+      const city = selectValue(indianCities, r);
+      const prod = selectValue(products, r);
+      const sales = 1500 + (Math.abs(num + r) % 8) * 800;
+      cells[`A${r}`] = { value: city };
+      cells[`B${r}`] = { value: prod };
+      cells[`C${r}`] = { value: String(sales) };
+      if (sales > maxSales) maxSales = sales;
+    }
+
+    const targetRow = rowCount + 1;
+    cells[`B${targetRow}`] = { value: 'Max Sale Value', bold: true };
+    cells[`C${targetRow}`] = { value: '' };
+
+    expectedValue = maxSales;
+    expectedFormulas = [
+      `=MAX(C2:C${rowCount})`,
+      `=max(c2:c${rowCount})`
+    ];
+    solutionFormula = `=MAX(C2:C${rowCount})`;
+    task = `Find the maximum sale value in cell C${targetRow} from range C2 to C${rowCount}.`;
+    hint = `Type =MAX(C2:C${rowCount}) in C${targetRow}.`;
   }
 
   return {
@@ -247,24 +371,24 @@ export function generateQuestion(num: number): Question {
     questionNum: num,
     category,
     difficulty,
-    title: `${category} Challenge #${num}`,
-    description: `Solve this practical ${category} case study exercise using Excel functions.`,
-    scenario: `This exercise represents standard corporate situations inside the ${category} category.`,
+    title,
+    description: `Solve this practical ${category} case study exercise using Excel formulas.`,
+    scenario,
     task,
     estimatedTime: `${3 + (num % 5)} min`,
     initialGrid: {
-      rowCount: 4,
-      colCount: 4,
+      rowCount: rowCount + 2,
+      colCount: 5,
       cells
     },
-    targetCell: 'C2',
+    targetCell: expectedFormulas[0].match(/:([A-Z]\d+)/)?.[1] || 'B2', // dynamically matches the target cell B[N]
     expectedFormulas,
     expectedValue,
     hint,
     formulaSyntax: `=FORMULA(cell_coordinates)`,
     formulaExample: solutionFormula,
     solutionFormula,
-    explanation: `Using the correct formulas ensures that your ${category} calculations remain fully dynamic.`,
+    explanation: `Perfect! The spreadsheet calculated the formulas dynamic evaluations matching this unique dataset.`,
     solution: solutionFormula,
     relatedLesson: `Lesson related to ${category}`
   };
@@ -272,7 +396,7 @@ export function generateQuestion(num: number): Question {
 
 // Generate the catalog list of challenges (let's populate 20 per category, giving 340+ base challenges)
 const catalogQuestions: Question[] = [];
-let idx = 5; // Start generating catalog challenges from index 5 onwards
+let idx = 5;
 practiceCategories.forEach((cat) => {
   for (let i = 1; i <= 20; i++) {
     catalogQuestions.push(generateQuestion(idx++));
