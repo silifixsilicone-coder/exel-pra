@@ -1,6 +1,6 @@
 import { JobProject } from '../types';
 
-export const jobProjectsData: JobProject[] = [
+const manualQuestions: JobProject[] = [
   {
     id: 'salary-sheet',
     category: 'Accountant',
@@ -289,3 +289,134 @@ export const jobProjectsData: JobProject[] = [
     ]
   }
 ];
+
+// Reusable Indian Corporate Datasets
+const indianNames = [
+  'Amit Sharma', 'Priya Patel', 'Rahul Verma', 'Sneha Joshi', 'Vikram Singh',
+  'Neha Gupta', 'Rajesh Kumar', 'Anjali Mehta', 'Sunil Pawar', 'Deepa Nair',
+  'Rohan Das', 'Kiran Shah', 'Pooja Roy', 'Arjun Sen', 'Maya Rao', 'Suresh Iyer'
+];
+
+const indianCities = [
+  'Mumbai', 'Pune', 'Nagpur', 'Nashik', 'Hyderabad', 'Bangalore', 'Delhi', 'Chennai', 'Kolkata', 'Ahmedabad'
+];
+
+const products = [
+  'Laptop', 'Mouse', 'Keyboard', 'Monitor', 'Chair', 'Printer', 'Desk', 'Webcam', 'Router', 'UPS', 'Scanner'
+];
+
+const jobCategories: JobProject['category'][] = [
+  'Accountant',
+  'MIS Executive',
+  'Office Admin',
+  'Data Entry Operator',
+  'Business Owner'
+];
+
+const jobTemplates = [
+  'Salary Sheet', 'Attendance Tracker', 'GST Invoice Builder', 'Inventory Log',
+  'Sales Summary', 'Purchase Order Register', 'Expense Audit Tracker', 'Cash Book Balance',
+  'Payroll Registry', 'Customer CRM Database', 'Employee Record Register', 'Stock Inventory Sheet',
+  'Client Quotation', 'MIS Executive Report', 'KPI Performance Dashboard', 'Bank Reconciliation Ledger',
+  'Monthly Revenue Report'
+];
+
+const generatedJobs: JobProject[] = [];
+let jobIdx = 4; // Start generating from ID index 4 onwards
+
+jobCategories.forEach((role) => {
+  for (let i = 1; i <= 20; i++) {
+    const numId = jobIdx++;
+    const template = jobTemplates[numId % jobTemplates.length];
+    
+    const difficulty: JobProject['difficulty'] = 
+      numId % 4 === 0 ? 'Job Ready' : numId % 3 === 0 ? 'Advanced' : numId % 2 === 0 ? 'Intermediate' : 'Beginner';
+
+    const empName1 = indianNames[numId % indianNames.length];
+    const empName2 = indianNames[(numId + 1) % indianNames.length];
+    const city = indianCities[numId % indianCities.length];
+    const item = products[numId % products.length];
+
+    const valA2 = 2000 + (numId % 10) * 500;
+    const valB2 = 1000 + (numId % 5) * 200;
+
+    let expectedValue = valA2 + valB2;
+    let taskDesc = `In cell C2, calculate totals using =A2+B2.`;
+    let expectedFormulas = [`=A2+B2`, `=a2+b2`, `=SUM(A2:B2)`, `=sum(a2:b2)`];
+    
+    let cells: Record<string, { value: string; bold?: boolean }> = {
+      A1: { value: 'Base Value A', bold: true },
+      B1: { value: 'Value B', bold: true },
+      C1: { value: 'Computed Output', bold: true },
+      A2: { value: String(valA2) },
+      B2: { value: String(valB2) },
+      C2: { value: '' },
+      A3: { value: 'Elena Gilbert' },
+      B3: { value: '1500' },
+      C3: { value: '3500' } // Pre-populated for reference
+    };
+
+    if (template.includes('Invoice') || template.includes('Sales')) {
+      taskDesc = `In cell C2, calculate the total line amount by multiplying Qty (A2) and Unit Price (B2).`;
+      cells = {
+        A1: { value: 'Quantity', bold: true },
+        B1: { value: 'Unit Price ($)', bold: true },
+        C1: { value: 'Total Amount', bold: true },
+        A2: { value: '10' },
+        B2: { value: '150' },
+        C2: { value: '' }
+      };
+      expectedValue = 1500;
+      expectedFormulas = [`=A2*B2`, `=a2*b2`];
+    } else if (template.includes('Salary') || template.includes('Payroll')) {
+      taskDesc = `In cell C2, calculate HRA allowance by multiplying Basic Pay (A2) by 10% (=A2*0.1).`;
+      cells = {
+        A1: { value: 'Basic Salary', bold: true },
+        B1: { value: 'Allowances', bold: true },
+        C1: { value: 'HRA (10%)', bold: true },
+        A2: { value: '30000' },
+        B2: { value: '2500' },
+        C2: { value: '' }
+      };
+      expectedValue = 3000;
+      expectedFormulas = [`=A2*0.1`, `=a2*0.1`, `=A2*10%`, `=a2*10%`];
+    }
+
+    generatedJobs.push({
+      id: `job-gen-${numId}`,
+      category: role,
+      title: `${role} - ${template} (#${numId})`,
+      description: `Complete the office ${template} sheet by evaluating required row metrics.`,
+      scenario: `You are working as a ${role} at a corporate office in ${city}. You must complete this ${template} sheet detailing ${empName1} and ${empName2}'s registers.`,
+      tasks: [
+        taskDesc,
+        `Verify output cells values are formatted correctly.`,
+        `Click submit evaluation check.`
+      ],
+      initialGrid: {
+        rowCount: 5,
+        colCount: 4,
+        cells
+      },
+      validationRules: [
+        {
+          targetCell: 'C2',
+          expectedFormulas,
+          expectedValue,
+          checkType: 'value',
+          description: `Line item calculations for target cell C2.`
+        }
+      ],
+      hints: [
+        `Select cell C2, type your formula starting with equal (=) sign.`,
+        `Use cells A2 and B2 inside the calculation parameters.`
+      ],
+      difficulty,
+      solution: `The expected formula is: ${expectedFormulas[0]}`
+    });
+  }
+});
+
+export const jobProjectsData: JobProject[] = [...manualQuestions, ...generatedJobs];
+export const totalJobsCount = jobProjectsData.length;
+

@@ -99,6 +99,8 @@ export interface JobProject {
   initialGrid: SpreadsheetState;
   validationRules: JobValidationRule[];
   hints: string[];
+  difficulty?: 'Beginner' | 'Intermediate' | 'Advanced' | 'Job Ready';
+  solution?: string;
 }
 
 export interface Exam {
