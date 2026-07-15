@@ -13,12 +13,17 @@ import {
   ArrowRight,
   Home,
   Check,
-  FolderSync,
+  Award,
+  BookOpen,
+  Eye,
+  Percent,
+  XCircle,
+  Activity,
   GraduationCap
 } from 'lucide-react';
 import { useProgress } from '@/hooks/useProgress';
 import Spreadsheet from '@/components/shared/Spreadsheet';
-import { examsData } from '@/data/exams';
+import { examsData, getQuestionsForExam } from '@/data/exams';
 import { SpreadsheetState, Exam, Question, ExamResult } from '@/types';
 import { evaluateFormula } from '@/utils/formulaEvaluator';
 
@@ -44,17 +49,28 @@ export default function ExamSessionPage({ params }: PageProps) {
   const [userGrids, setUserGrids] = useState<SpreadsheetState[]>([]);
   const [resultsData, setResultsData] = useState<ExamResult | null>(null);
 
+  // Review states
+  const [reviewReport, setReviewReport] = useState<{ question: Question; userValue: string; isCorrect: boolean }[]>([]);
+  const [showReview, setShowReview] = useState(false);
+
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load exam details
   useEffect(() => {
     const foundExam = examsData.find(e => e.id === id);
     if (foundExam) {
-      setExam(foundExam);
+      // Fetch 30 random questions from unified question bank
+      const examQuestions = getQuestionsForExam(foundExam.id);
+      const examWithQuestions: Exam = {
+        ...foundExam,
+        questions: examQuestions
+      };
+
+      setExam(examWithQuestions);
       setTimeLeft(foundExam.timeLimitSeconds);
       
       // Deep copy all initial grids to save user edits dynamically
-      const initialGrids = foundExam.questions.map(q => 
+      const initialGrids = examQuestions.map(q => 
         JSON.parse(JSON.stringify(q.initialGrid))
       );
       setUserGrids(initialGrids);
@@ -81,12 +97,12 @@ export default function ExamSessionPage({ params }: PageProps) {
     };
   }, [examStarted, examFinished, timeLeft]);
 
-  if (!isLoaded || !exam) {
+  if (!isLoaded || !exam || userGrids.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-950 text-slate-400">
+      <div className="flex items-center justify-center min-h-screen bg-slate-950 text-slate-400 font-mono">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-          <span className="font-mono text-xs">Loading exam environment...</span>
+          <span>Setting up certification environment...</span>
         </div>
       </div>
     );
@@ -116,6 +132,7 @@ export default function ExamSessionPage({ params }: PageProps) {
     // Evaluate answers
     let correctCount = 0;
     let wrongCount = 0;
+    const report: typeof reviewReport = [];
 
     exam.questions.forEach((question, idx) => {
       const state = userGrids[idx];
@@ -139,6 +156,12 @@ export default function ExamSessionPage({ params }: PageProps) {
 
       if (isCorrect) correctCount++;
       else wrongCount++;
+
+      report.push({
+        question,
+        userValue,
+        isCorrect
+      });
     });
 
     const totalQuestions = exam.questions.length;
@@ -158,6 +181,7 @@ export default function ExamSessionPage({ params }: PageProps) {
     // Save exam result to local storage
     addExamResult(newResult);
 
+    setReviewReport(report);
     setResultsData(newResult);
     setExamFinished(true);
   };
@@ -170,17 +194,17 @@ export default function ExamSessionPage({ params }: PageProps) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
         <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xl text-center">
-          <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-450 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/5">
+          <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-450 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/5 animate-pulse">
             <GraduationCap className="w-8 h-8" />
           </div>
 
           <div className="space-y-2">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">
-              Instructions
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block font-mono">
+              Exam Instructions
             </span>
             <h2 className="text-xl font-bold text-slate-100">{exam.title}</h2>
             <p className="text-xs text-slate-400 font-sans leading-relaxed">
-              Once you start, a countdown timer will begin. Hints, solutions, and inline verification checks are strictly disabled. Submit your final spreadsheet answers before time runs out.
+              You are about to start a certification assessment containing **30 randomized questions** from the Excel bank. Hints and inline validations are strictly locked. Achieve **80% or higher** to pass and earn your certificate!
             </p>
           </div>
 
@@ -188,13 +212,13 @@ export default function ExamSessionPage({ params }: PageProps) {
             <div className="p-3 bg-slate-950 rounded-xl border border-slate-850">
               <span className="text-slate-550 block font-semibold">Time Limit</span>
               <span className="font-mono text-sm font-bold text-slate-200 mt-1 block">
-                {exam.timeLimitSeconds / 60} Minutes
+                30 Minutes
               </span>
             </div>
             <div className="p-3 bg-slate-950 rounded-xl border border-slate-850">
-              <span className="text-slate-550 block font-semibold">Questions</span>
-              <span className="font-mono text-sm font-bold text-slate-200 mt-1 block">
-                {exam.questions.length} Challenges
+              <span className="text-slate-550 block font-semibold">Passing Score</span>
+              <span className="font-mono text-sm font-bold text-emerald-450 mt-1 block">
+                80% Score
               </span>
             </div>
           </div>
@@ -203,7 +227,7 @@ export default function ExamSessionPage({ params }: PageProps) {
             onClick={handleStartExam}
             className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 active:scale-98 text-slate-950 font-bold rounded-xl text-sm transition shadow-lg shadow-emerald-500/10"
           >
-            Start Assessment
+            Start Certification Exam
           </button>
         </div>
       </div>
@@ -212,13 +236,27 @@ export default function ExamSessionPage({ params }: PageProps) {
 
   // Exam result sheet view
   if (examFinished && resultsData) {
-    const hasPassed = resultsData.score >= 70;
+    const hasPassed = resultsData.score >= 80;
+
+    // Calculate dynamic performance breakdown by question category
+    const categoryAnalysis: Record<string, { correct: number; total: number }> = {};
+    reviewReport.forEach(item => {
+      const category = item.question.category || 'General';
+      if (!categoryAnalysis[category]) {
+        categoryAnalysis[category] = { correct: 0, total: 0 };
+      }
+      categoryAnalysis[category].total++;
+      if (item.isCorrect) {
+        categoryAnalysis[category].correct++;
+      }
+    });
 
     return (
-      <div className="flex flex-col items-center justify-center min-h-[85vh] px-4">
-        <div className="max-w-lg w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xl">
+      <div className="max-w-4xl mx-auto p-6 md:p-8 space-y-8 pb-24">
+        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xl">
+          
           <div className="text-center space-y-2">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Assessment Result</span>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block font-mono">Assessment Result</span>
             <h2 className="text-2xl font-black text-slate-100">{exam.title}</h2>
           </div>
 
@@ -226,49 +264,156 @@ export default function ExamSessionPage({ params }: PageProps) {
           <div className={`p-4 rounded-2xl border text-center flex flex-col items-center gap-2 select-none ${
             hasPassed 
               ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-450' 
-              : 'bg-rose-950/20 border-rose-500/30 text-rose-455'
+              : 'bg-rose-950/20 border-rose-500/30 text-rose-350'
           }`}>
             {hasPassed ? (
-              <CheckCircle className="w-10 h-10" />
+              <CheckCircle className="w-10 h-10 text-emerald-400" />
             ) : (
-              <AlertTriangle className="w-10 h-10" />
+              <AlertTriangle className="w-10 h-10 text-rose-400" />
             )}
             <div>
-              <div className="font-bold text-lg">{hasPassed ? 'Status: PASSED' : 'Status: NOT COMPLETED'}</div>
-              <p className="text-slate-400 text-xs mt-1 max-w-sm font-sans leading-relaxed">
+              <div className="font-bold text-lg">{hasPassed ? 'Status: PASSED' : 'Status: FAILED'}</div>
+              <p className="text-slate-450 text-xs mt-1 max-w-md font-sans leading-relaxed">
                 {hasPassed 
-                  ? 'Congratulations! You have demonstrated core competency in this category.' 
-                  : 'You did not reach the 70% passing threshold. Review the questions and try again.'}
+                  ? 'Excellent! You have successfully passed the certification check and unlocked your certificate badge.' 
+                  : 'You did not reach the 80% passing threshold. Practice more challenges in the lab and retry.'}
               </p>
             </div>
           </div>
 
+          {/* Dynamic Certificate Unlock Frame */}
+          {hasPassed && (
+            <div className="p-6 bg-slate-950 border border-amber-500/30 rounded-2xl relative overflow-hidden select-none shadow-xl border-dashed">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full filter blur-xl" />
+              <div className="text-center space-y-4">
+                <Award className="w-12 h-12 text-amber-450 mx-auto animate-bounce" />
+                <div className="space-y-1">
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-amber-450">Excel Expert Certificate</h3>
+                  <p className="text-[10px] text-slate-500 font-mono">Awarded to the Candidate on {resultsData.date}</p>
+                </div>
+                <div className="border-t border-slate-850 pt-3 max-w-sm mx-auto">
+                  <p className="text-xs text-slate-350 leading-relaxed font-serif italic">
+                    "This document certifies that the candidate has successfully cleared the 30-question dynamic certification exam with a score of {resultsData.score}%."
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Results specs */}
-          <div className="grid grid-cols-3 gap-2.5 text-center text-xs font-mono">
-            <div className="p-3 bg-slate-950 rounded-xl border border-slate-850">
-              <span className="text-slate-550 block font-sans font-semibold">Score</span>
+          <div className="grid grid-cols-3 gap-3 text-center text-xs font-mono">
+            <div className="p-3.5 bg-slate-950 rounded-xl border border-slate-850">
+              <span className="text-slate-500 block font-sans font-semibold">Your Score</span>
               <span className="text-lg font-black text-slate-100 mt-1 block">{resultsData.score}%</span>
             </div>
-            <div className="p-3 bg-slate-950 rounded-xl border border-slate-850">
-              <span className="text-slate-550 block font-sans font-semibold">Correct</span>
-              <span className="text-lg font-black text-emerald-455 mt-1 block">{resultsData.correctCount}</span>
+            <div className="p-3.5 bg-slate-950 rounded-xl border border-slate-850">
+              <span className="text-slate-550 block font-sans font-semibold">Correct Tasks</span>
+              <span className="text-lg font-black text-emerald-450 mt-1 block">{resultsData.correctCount}</span>
             </div>
-            <div className="p-3 bg-slate-950 rounded-xl border border-slate-850">
-              <span className="text-slate-550 block font-sans font-semibold">Wrong</span>
+            <div className="p-3.5 bg-slate-950 rounded-xl border border-slate-850">
+              <span className="text-slate-550 block font-sans font-semibold">Incorrect Tasks</span>
               <span className="text-lg font-black text-rose-455 mt-1 block">{resultsData.wrongCount}</span>
             </div>
           </div>
 
-          <div className="flex gap-3">
+          {/* Category-wise Performance Analysis */}
+          <div className="space-y-3.5 bg-slate-950 border border-slate-850 rounded-2xl p-5 shadow-lg">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-455 flex items-center gap-1.5 font-sans">
+              <Activity className="w-4 h-4 text-emerald-450" />
+              Category Performance Analysis
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Object.entries(categoryAnalysis).map(([cat, val]) => {
+                const percent = Math.round((val.correct / val.total) * 100);
+                return (
+                  <div key={cat} className="space-y-1.5 text-xs">
+                    <div className="flex justify-between font-mono text-[11px]">
+                      <span className="text-slate-350 font-bold">{cat}</span>
+                      <span className="text-slate-455">{val.correct}/{val.total} correct ({percent}%)</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          percent >= 80 ? 'bg-emerald-450' : percent >= 50 ? 'bg-amber-500' : 'bg-rose-500'
+                        }`}
+                        style={{ width: `${percent}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Review Answers Toggle Button */}
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => setShowReview(prev => !prev)}
+              className="w-full py-3 bg-slate-950 border border-slate-805 hover:bg-slate-900 text-slate-200 font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5 transition"
+            >
+              <Eye className="w-4 h-4 text-emerald-450" />
+              {showReview ? 'Hide Exam Answers Review' : 'Review Exam Answers'}
+            </button>
+
             <Link
               href="/exam"
-              className="flex-1 py-3 border border-slate-800 hover:border-slate-700 bg-slate-950 text-slate-300 font-semibold rounded-xl text-xs text-center flex items-center justify-center gap-1.5 transition active:scale-98"
+              className="py-3 bg-slate-950 border border-slate-805 hover:bg-slate-900 text-slate-300 font-semibold rounded-xl text-xs text-center flex items-center justify-center gap-1.5 transition"
             >
               <Home className="w-4 h-4" />
               Exit to Lobby
             </Link>
           </div>
+
         </div>
+
+        {/* Detailed Answers Review section */}
+        {showReview && (
+          <div className="space-y-4 animate-in fade-in duration-200">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-455 font-mono">
+              Exam Answers Sheet Review
+            </h3>
+            
+            <div className="space-y-4">
+              {reviewReport.map((item, idx) => (
+                <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
+                  <div className="flex items-center justify-between gap-2 border-b border-slate-850 pb-2">
+                    <span className="text-xs font-bold text-slate-100 flex items-center gap-2">
+                      <span className="text-emerald-450 font-mono">Q{idx + 1}.</span>
+                      {item.question.title}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
+                      item.isCorrect ? 'bg-emerald-950/20 text-emerald-400 border border-emerald-900/40' : 'bg-rose-950/20 text-rose-455 border border-rose-900/40'
+                    }`}>
+                      {item.isCorrect ? 'CORRECT' : 'INCORRECT'}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-450 leading-relaxed font-sans">
+                    <strong className="text-slate-300 block mb-0.5">Scenario:</strong>
+                    {item.question.scenario}
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1 font-mono text-[11px]">
+                    <div>
+                      <div className="text-slate-500 font-sans font-medium">Your Input:</div>
+                      <code className="block mt-1 p-2 bg-slate-950 rounded border border-slate-850 text-slate-300 truncate">
+                        {item.userValue || '(Empty)'}
+                      </code>
+                    </div>
+                    <div>
+                      <div className="text-slate-500 font-sans font-medium">Correct Formula:</div>
+                      <code className="block mt-1 p-2 bg-slate-950 rounded border border-slate-850 text-emerald-450 truncate">
+                        {item.question.solutionFormula}
+                      </code>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
       </div>
     );
   }
@@ -288,9 +433,9 @@ export default function ExamSessionPage({ params }: PageProps) {
         </div>
 
         {/* Timer countdown and progress count */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 select-none">
           <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 border border-slate-850 rounded-xl">
-            <span className="text-[10px] text-slate-500 font-semibold uppercase">Question</span>
+            <span className="text-[10px] text-slate-550 font-semibold uppercase">Question</span>
             <span className="font-mono font-bold text-slate-200 text-xs">
               {currentQuestionIndex + 1} of {exam.questions.length}
             </span>
@@ -301,7 +446,7 @@ export default function ExamSessionPage({ params }: PageProps) {
               ? 'bg-rose-950/20 border-rose-500/30 text-rose-400 animate-pulse' 
               : 'bg-slate-900 border-slate-850 text-slate-200'
           }`}>
-            <Timer className="w-4 h-4 text-slate-400" />
+            <Timer className="w-4 h-4 text-slate-450" />
             {formatTime(timeLeft)}
           </div>
         </div>
@@ -311,15 +456,15 @@ export default function ExamSessionPage({ params }: PageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
         
         {/* Spreadsheet Area (3 Cols) */}
-        <div className="lg:col-span-3 flex flex-col space-y-4">
+        <div className="lg:col-span-3 flex flex-col space-y-4 min-h-0">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-5 shadow-lg space-y-4">
             
             {/* Task Description */}
-            <div className="space-y-2.5 text-sm leading-relaxed text-slate-350">
+            <div className="space-y-2.5 text-sm leading-relaxed text-slate-350 font-sans">
               <p><strong className="text-slate-250">Scenario:</strong> {activeQuestion.scenario}</p>
               
-              <div className="bg-slate-950 border border-slate-850 rounded-xl p-4 mt-2">
-                <strong className="text-emerald-400 text-xs font-semibold uppercase tracking-wider block mb-1">
+              <div className="bg-slate-950 border border-slate-850 rounded-xl p-4 mt-2 font-sans">
+                <strong className="text-emerald-450 text-xs font-semibold uppercase tracking-wider block mb-1">
                   Active Instruction:
                 </strong>
                 <p className="text-slate-100 font-semibold">{activeQuestion.task}</p>
@@ -336,7 +481,7 @@ export default function ExamSessionPage({ params }: PageProps) {
             </div>
 
             {/* Bottom session navigation */}
-            <div className="flex items-center justify-between pt-4 border-t border-slate-850">
+            <div className="flex items-center justify-between pt-4 border-t border-slate-850 font-sans">
               <button
                 disabled={currentQuestionIndex === 0}
                 onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
@@ -349,7 +494,7 @@ export default function ExamSessionPage({ params }: PageProps) {
               {currentQuestionIndex === exam.questions.length - 1 ? (
                 <button
                   onClick={() => handleFinishExam(false)}
-                  className="flex items-center gap-1.5 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl text-xs font-bold transition shadow-lg"
+                  className="flex items-center gap-1.5 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl text-xs font-bold transition shadow-lg active:scale-95"
                 >
                   <Check className="w-4 h-4" />
                   Submit Examination
@@ -369,9 +514,9 @@ export default function ExamSessionPage({ params }: PageProps) {
         </div>
 
         {/* Sidebar Guidelines (1 Col) */}
-        <div className="space-y-6">
+        <div className="space-y-6 select-none">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5 select-none">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5 font-sans">
               <AlertTriangle className="w-4 h-4 text-amber-500" />
               Exam Constraints
             </h3>
