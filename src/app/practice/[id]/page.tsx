@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useProgress } from '@/hooks/useProgress';
 import Spreadsheet from '@/components/shared/Spreadsheet';
-import { practiceQuestionsData } from '@/data/practiceQuestions';
+import { practiceQuestionsData, getQuestionById } from '@/data/practiceQuestions';
 import { SpreadsheetState, Question } from '@/types';
 import { evaluateFormula } from '@/utils/formulaEvaluator';
 
@@ -50,7 +50,7 @@ export default function PracticeDetailPage({ params }: PageProps) {
 
   // Load question details
   useEffect(() => {
-    const foundQ = practiceQuestionsData.find(q => q.id === id);
+    const foundQ = getQuestionById(id);
     if (foundQ) {
       setQuestion(foundQ);
       setSheetState(JSON.parse(JSON.stringify(foundQ.initialGrid)));

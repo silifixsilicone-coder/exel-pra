@@ -76,6 +76,9 @@ export interface Question {
   formulaSyntax: string;
   formulaExample: string;
   solutionFormula: string;
+  explanation?: string;
+  solution?: string;
+  relatedLesson?: string;
 }
 
 export interface JobValidationRule {

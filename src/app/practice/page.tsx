@@ -2,20 +2,24 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   Grid, 
   CheckCircle2, 
   HelpCircle, 
   ChevronRight, 
   Search,
-  Filter
+  Filter,
+  Shuffle,
+  Sparkles
 } from 'lucide-react';
 import { useProgress } from '@/hooks/useProgress';
-import { practiceQuestionsData } from '@/data/practiceQuestions';
+import { practiceQuestionsData, getQuestionById, totalQuestionsCount, practiceCategories } from '@/data/practiceQuestions';
 
 type DifficultyFilter = 'All' | 'Beginner' | 'Intermediate' | 'Advanced';
 
 export default function PracticeIndex() {
+  const router = useRouter();
   const { progress, isLoaded, metrics } = useProgress();
   const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyFilter>('All');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -32,72 +36,110 @@ export default function PracticeIndex() {
     );
   }
 
-  // Get unique categories for filtering
-  const categories = ['All', ...Array.from(new Set(practiceQuestionsData.map(q => q.category)))];
+  // Categories list
+  const categories = ['All', ...practiceCategories];
 
-  // Filter practice questions
+  // Try parsing search query as integer ID to dynamically find from the 10,000+ dataset
+  const parsedId = searchQuery.trim().replace(/^#/, '');
+  const searchIdNum = parseInt(parsedId, 10);
+  const searchedGenQuestion = (!isNaN(searchIdNum) && searchIdNum >= 1 && searchIdNum <= totalQuestionsCount)
+    ? getQuestionById(`q-gen-${searchIdNum}`)
+    : undefined;
+
+  // Filter practice questions from catalog
   const filteredQuestions = practiceQuestionsData.filter(q => {
     const matchesDifficulty = selectedDifficulty === 'All' || q.difficulty === selectedDifficulty;
     const matchesCategory = selectedCategory === 'All' || q.category === selectedCategory;
-    const matchesSearch = q.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          q.description.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesSearch = searchQuery.trim() === '' || 
+                          q.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          q.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          q.id.toLowerCase().includes(searchQuery.toLowerCase());
+                          
     return matchesDifficulty && matchesCategory && matchesSearch;
   });
 
+  // If we found a direct ID match from the 10,000+ pool, display it at the top of results
+  if (searchedGenQuestion) {
+    if (!filteredQuestions.some(q => q.id === searchedGenQuestion.id)) {
+      filteredQuestions.unshift(searchedGenQuestion);
+    }
+  }
+
   const completedQuestions = progress.completedQuestionIds || [];
 
+  // Pick random question helper
+  const handleRandomChallenge = () => {
+    const randomId = Math.floor(Math.random() * totalQuestionsCount) + 1;
+    router.push(`/practice/q-gen-${randomId}`);
+  };
+
   return (
-    <div className="flex flex-col min-h-full p-6 lg:p-8 space-y-6 max-w-5xl mx-auto">
+    <div className="flex flex-col min-h-full p-6 lg:p-8 space-y-6 max-w-5xl mx-auto selection:bg-emerald-500 selection:text-white">
       
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-850 pb-6">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent flex items-center gap-2">
             Practice Challenges
+            <Sparkles className="w-5 h-5 text-emerald-400" />
           </h1>
-          <p className="text-slate-400 text-sm mt-1">
-            "LeetCode for Excel." Learn by writing formulas directly inside real spreadsheet scenarios.
+          <p className="text-slate-450 text-xs md:text-sm leading-relaxed max-w-lg font-sans">
+            "LeetCode for Excel." Learn by writing formulas directly inside real spreadsheet scenarios. Access a pool of {totalQuestionsCount.toLocaleString()}+ dynamic challenges.
           </p>
         </div>
 
         {/* Aggregate Mini-card */}
-        <div className="flex items-center gap-4 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 shrink-0 select-none">
+        <div className="flex items-center gap-4 bg-slate-900 border border-slate-800 rounded-2xl px-5 py-3 shrink-0 select-none">
           <div className="text-xs">
-            <span className="text-slate-500 block uppercase font-semibold">Solved</span>
-            <span className="font-mono font-bold text-slate-100">{metrics.questionsSolved} / {practiceQuestionsData.length}</span>
+            <span className="text-slate-500 block uppercase font-bold text-[9px] tracking-wider">Solved</span>
+            <span className="font-mono font-bold text-slate-100">{completedQuestions.length} Challenges</span>
           </div>
-          <div className="w-[1px] h-6 bg-slate-850" />
+          <div className="w-[1px] h-6 bg-slate-800" />
           <div className="text-xs">
-            <span className="text-slate-500 block uppercase font-semibold">Accuracy</span>
+            <span className="text-slate-500 block uppercase font-bold text-[9px] tracking-wider">Accuracy</span>
             <span className="font-mono font-bold text-emerald-450">{metrics.accuracy}%</span>
           </div>
         </div>
       </div>
 
       {/* Filters Toolbar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
-        {/* Search */}
-        <div className="relative w-full md:w-72">
-          <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-500" />
-          <input
-            type="text"
-            placeholder="Search questions..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-350 focus:outline-none focus:border-emerald-500/50"
-          />
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col lg:flex-row gap-4 items-center justify-between">
+        
+        {/* Search & Random Actions */}
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+          {/* Search bar */}
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-500" />
+            <input
+              type="text"
+              placeholder="Search title, category or ID (e.g. #4500)..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-350 focus:outline-none focus:border-emerald-500/50 transition font-sans placeholder-slate-500"
+            />
+          </div>
+
+          {/* Random Challenge button */}
+          <button
+            onClick={handleRandomChallenge}
+            className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 bg-slate-950 border border-slate-800 hover:border-slate-700 hover:bg-slate-900 text-slate-300 rounded-xl text-xs font-semibold active:scale-95 transition"
+          >
+            <Shuffle className="w-3.5 h-3.5 text-emerald-400" />
+            Random Challenge
+          </button>
         </div>
 
         {/* Selection filters */}
-        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+        <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
           {/* Difficulty Dropdown */}
-          <div className="flex items-center gap-1.5 text-xs text-slate-400">
+          <div className="flex items-center gap-1.5 text-xs text-slate-400 w-full sm:w-auto">
             <Filter className="w-3.5 h-3.5" />
             <span>Difficulty:</span>
             <select
               value={selectedDifficulty}
               onChange={(e) => setSelectedDifficulty(e.target.value as DifficultyFilter)}
-              className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none text-slate-300"
+              className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none text-slate-300 w-full sm:w-auto font-sans"
             >
               <option value="All">All Difficulties</option>
               <option value="Beginner">Beginner</option>
@@ -107,12 +149,12 @@ export default function PracticeIndex() {
           </div>
 
           {/* Category Dropdown */}
-          <div className="flex items-center gap-1.5 text-xs text-slate-400">
+          <div className="flex items-center gap-1.5 text-xs text-slate-400 w-full sm:w-auto">
             <span>Category:</span>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none text-slate-300"
+              className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none text-slate-300 w-full sm:w-auto font-sans"
             >
               {categories.map((cat) => (
                 <option key={cat} value={cat}>
@@ -143,7 +185,7 @@ export default function PracticeIndex() {
                     {/* Status icon */}
                     <div className="mt-1 shrink-0">
                       {isCompleted ? (
-                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                        <CheckCircle2 className="w-5 h-5 text-emerald-450" />
                       ) : isAttempted ? (
                         <div className="w-5 h-5 rounded-full border border-rose-500/50 bg-rose-500/10 flex items-center justify-center">
                           <div className="w-1.5 h-1.5 rounded-full bg-rose-455" />
@@ -164,7 +206,7 @@ export default function PracticeIndex() {
                         <h3 className="text-sm font-bold text-slate-200 group-hover:text-white transition">
                           {q.title}
                         </h3>
-                        <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-850 text-[10px] text-slate-450 font-medium">
+                        <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-850 text-[10px] text-slate-450 font-medium font-sans">
                           {q.category}
                         </span>
                       </div>
